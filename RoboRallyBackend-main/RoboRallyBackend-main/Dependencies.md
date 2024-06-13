@@ -1,0 +1,6 @@
+# ....
+# Lombok: To reduce boilerplate code.
+# Spring Data JPA: To persist data in SQL stores using Java Persistence API.
+# Spring Web: To build web and RESTful applications.
+# H2 Database: To provide a fast in-memory database for development and testing.'
+# ....
