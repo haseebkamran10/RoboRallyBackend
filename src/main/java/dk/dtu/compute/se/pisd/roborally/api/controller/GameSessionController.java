@@ -1,6 +1,7 @@
 package dk.dtu.compute.se.pisd.roborally.api.controller;
 
 import dk.dtu.compute.se.pisd.roborally.api.model.GameSession;
+import dk.dtu.compute.se.pisd.roborally.api.model.Player;
 import dk.dtu.compute.se.pisd.roborally.api.service.GameSessionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -46,5 +47,11 @@ public class GameSessionController {
     public ResponseEntity<Void> deleteGameSession(@PathVariable Long id) {
         gameSessionService.deleteGameSession(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{gameId}/join")
+    public ResponseEntity<GameSession> joinGameSession(@PathVariable Long gameId, @RequestBody Player player) {
+        GameSession updatedGameSession = gameSessionService.joinGameSession(gameId, player);
+        return ResponseEntity.ok(updatedGameSession);
     }
 }
