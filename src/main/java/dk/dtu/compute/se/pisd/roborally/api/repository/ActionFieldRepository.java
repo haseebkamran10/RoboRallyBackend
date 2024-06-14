@@ -1,9 +1,9 @@
 package dk.dtu.compute.se.pisd.roborally.api.repository;
 
-import dk.dtu.compute.se.pisd.roborally.api.model.Direction;
+import dk.dtu.compute.se.pisd.roborally.api.model.ActionField;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface ActionFieldRepository extends JpaRepository<ActionFieldRepository, Long> {
+public interface ActionFieldRepository extends JpaRepository<ActionField, Long> {
 }
