@@ -58,8 +58,12 @@ public class GameSessionServiceImpl implements GameSessionService {
         }
         gameSession.setPlayers(attachedPlayers);
 
+        // Set the number of players
+        gameSession.setNumberOfPlayers(attachedPlayers.size());
+
         return gameSessionRepository.save(gameSession);
     }
+
 
     @Override
     public GameSession updateGameSession(Long id, GameSession gameSessionDetails) {
@@ -77,4 +81,25 @@ public class GameSessionServiceImpl implements GameSessionService {
     public void deleteGameSession(Long id) {
         gameSessionRepository.deleteById(id);
     }
+
+    @Override
+    public GameSession joinGameSession(Long gameId, Player player) {
+        GameSession gameSession = getGameSessionById(gameId);
+        if (gameSession == null) {
+            throw new IllegalArgumentException("Game session not found");
+        }
+
+        Player attachedPlayer = playerRepository.findById(player.getId())
+                .orElseThrow(() -> new IllegalArgumentException("Player not found"));
+
+        attachedPlayer.setGameSession(gameSession);
+        gameSession.getPlayers().add(attachedPlayer);
+
+        // Update the number of players in the game session
+        gameSession.setNumberOfPlayers(gameSession.getPlayers().size());
+
+        playerRepository.save(attachedPlayer);
+        return gameSessionRepository.save(gameSession);
+    }
+
 }
