@@ -16,10 +16,8 @@ import java.util.List;
 @Getter
 @Setter
 public class Board {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private String name;
 }
