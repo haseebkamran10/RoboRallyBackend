@@ -33,6 +33,10 @@ public class GameSessionController {
             return ResponseEntity.badRequest().body(null);
         }
 
+        if (gameSession.getPlayers() == null || gameSession.getPlayers().size() != 1) {
+            return ResponseEntity.badRequest().body(null);
+        }
+
         GameSession savedGameSession = gameSessionService.createGameSession(gameSession);
         return ResponseEntity.ok(savedGameSession);
     }
@@ -52,6 +56,12 @@ public class GameSessionController {
     @PostMapping("/{gameId}/join")
     public ResponseEntity<GameSession> joinGameSession(@PathVariable Long gameId, @RequestBody Player player) {
         GameSession updatedGameSession = gameSessionService.joinGameSession(gameId, player);
+        return ResponseEntity.ok(updatedGameSession);
+    }
+
+    @PostMapping("/join/{joinCode}")
+    public ResponseEntity<GameSession> joinGameSessionByCode(@PathVariable String joinCode, @RequestBody Player player) {
+        GameSession updatedGameSession = gameSessionService.joinGameSessionByCode(joinCode, player);
         return ResponseEntity.ok(updatedGameSession);
     }
 }

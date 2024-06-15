@@ -61,6 +61,14 @@ public class GameSessionServiceImpl implements GameSessionService {
         // Set the number of players
         gameSession.setNumberOfPlayers(attachedPlayers.size());
 
+        // Set the host of the game session
+        if (!attachedPlayers.isEmpty()) {
+            gameSession.setHost(attachedPlayers.get(0));
+        }
+
+        // Generate a random 6-digit join code
+        gameSession.setJoinCode(String.format("%06d", (int) (Math.random() * 1000000)));
+
         return gameSessionRepository.save(gameSession);
     }
 
@@ -101,5 +109,26 @@ public class GameSessionServiceImpl implements GameSessionService {
         playerRepository.save(attachedPlayer);
         return gameSessionRepository.save(gameSession);
     }
+
+    @Override
+    public GameSession joinGameSessionByCode(String joinCode, Player player) {
+        GameSession gameSession = gameSessionRepository.findByJoinCode(joinCode);
+        if (gameSession == null) {
+            throw new IllegalArgumentException("Game session not found");
+        }
+
+        Player attachedPlayer = playerRepository.findById(player.getId())
+                .orElseThrow(() -> new IllegalArgumentException("Player not found"));
+
+        attachedPlayer.setGameSession(gameSession);
+        gameSession.getPlayers().add(attachedPlayer);
+
+        // Update the number of players in the game session
+        gameSession.setNumberOfPlayers(gameSession.getPlayers().size());
+
+        playerRepository.save(attachedPlayer);
+        return gameSessionRepository.save(gameSession);
+    }
+
 
 }

@@ -23,4 +23,9 @@ public class GameSession {
     private List<Player> players;
 
     private int numberOfPlayers;
+
+    private String joinCode;
+
+    @ManyToOne
+    private Player host;
 }
