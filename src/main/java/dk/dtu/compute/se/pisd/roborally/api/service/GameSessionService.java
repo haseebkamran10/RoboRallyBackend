@@ -13,4 +13,6 @@ public interface GameSessionService {
     void deleteGameSession(Long id);
 
     GameSession joinGameSession(Long gameId, Player player);
+
+    GameSession joinGameSessionByCode(String joinCode, Player player);
 }
