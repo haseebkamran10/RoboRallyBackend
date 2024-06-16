@@ -1,21 +1,13 @@
 package dk.dtu.compute.se.pisd.roborally.api.service;
 
-import dk.dtu.compute.se.pisd.roborally.api.model.Player;
-
+import dk.dtu.compute.se.pisd.roborally.api.dto.PlayerDTO;
 import java.util.List;
 
-/**
- * Service interface for managing Player entities.
- */
 public interface PlayerService {
-
-    List<Player> getAllPlayers();
-
-    Player getPlayerById(Long id);
-
-    Player createPlayer(Player player);
-
-    Player updatePlayer(Long id, Player playerDetails);
-
+    List<PlayerDTO> getAllPlayers();
+    PlayerDTO getPlayerById(Long id);
+    PlayerDTO createPlayer(PlayerDTO playerDTO);
+    PlayerDTO updatePlayer(Long id, PlayerDTO playerDTO);
     void deletePlayer(Long id);
+    PlayerDTO movePlayer(Long id, int steps); // Added this method for moving the player
 }

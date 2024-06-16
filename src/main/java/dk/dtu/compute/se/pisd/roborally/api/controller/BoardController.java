@@ -1,6 +1,6 @@
 package dk.dtu.compute.se.pisd.roborally.api.controller;
 
-import dk.dtu.compute.se.pisd.roborally.api.model.Board;
+import dk.dtu.compute.se.pisd.roborally.api.dto.BoardDTO;
 import dk.dtu.compute.se.pisd.roborally.api.service.BoardService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -16,25 +16,25 @@ public class BoardController {
     private BoardService boardService;
 
     @GetMapping
-    public List<Board> getAllBoards() {
+    public List<BoardDTO> getAllBoards() {
         return boardService.getAllBoards();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Board> getBoardById(@PathVariable Long id) {
-        Board board = boardService.getBoardById(id);
+    public ResponseEntity<BoardDTO> getBoardById(@PathVariable Long id) {
+        BoardDTO board = boardService.getBoardById(id);
         return ResponseEntity.ok(board);
     }
 
     @PostMapping
-    public ResponseEntity<Board> createBoard(@RequestBody Board board) {
-        Board savedBoard = boardService.createBoard(board);
+    public ResponseEntity<BoardDTO> createBoard(@RequestBody BoardDTO boardDTO) {
+        BoardDTO savedBoard = boardService.createBoard(boardDTO);
         return ResponseEntity.ok(savedBoard);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Board> updateBoard(@PathVariable Long id, @RequestBody Board boardDetails) {
-        Board updatedBoard = boardService.updateBoard(id, boardDetails);
+    public ResponseEntity<BoardDTO> updateBoard(@PathVariable Long id, @RequestBody BoardDTO boardDTO) {
+        BoardDTO updatedBoard = boardService.updateBoard(id, boardDTO);
         return ResponseEntity.ok(updatedBoard);
     }
 

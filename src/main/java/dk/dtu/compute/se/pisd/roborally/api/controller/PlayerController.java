@@ -1,6 +1,6 @@
 package dk.dtu.compute.se.pisd.roborally.api.controller;
 
-import dk.dtu.compute.se.pisd.roborally.api.model.Player;
+import dk.dtu.compute.se.pisd.roborally.api.dto.PlayerDTO;
 import dk.dtu.compute.se.pisd.roborally.api.service.PlayerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -16,25 +16,25 @@ public class PlayerController {
     private PlayerService playerService;
 
     @GetMapping
-    public List<Player> getAllPlayers() {
+    public List<PlayerDTO> getAllPlayers() {
         return playerService.getAllPlayers();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Player> getPlayerById(@PathVariable Long id) {
-        Player player = playerService.getPlayerById(id);
-        return ResponseEntity.ok(player);
+    public ResponseEntity<PlayerDTO> getPlayerById(@PathVariable Long id) {
+        PlayerDTO playerDTO = playerService.getPlayerById(id);
+        return ResponseEntity.ok(playerDTO);
     }
 
-    @PostMapping
-    public ResponseEntity<Player> createPlayer(@RequestBody Player player) {
-        Player savedPlayer = playerService.createPlayer(player);
+    @PostMapping("/create-player")
+    public ResponseEntity<PlayerDTO> createPlayer(@RequestBody PlayerDTO playerDTO) {
+        PlayerDTO savedPlayer = playerService.createPlayer(playerDTO);
         return ResponseEntity.ok(savedPlayer);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Player> updatePlayer(@PathVariable Long id, @RequestBody Player playerDetails) {
-        Player updatedPlayer = playerService.updatePlayer(id, playerDetails);
+    public ResponseEntity<PlayerDTO> updatePlayer(@PathVariable Long id, @RequestBody PlayerDTO playerDTO) {
+        PlayerDTO updatedPlayer = playerService.updatePlayer(id, playerDTO);
         return ResponseEntity.ok(updatedPlayer);
     }
 
@@ -42,5 +42,16 @@ public class PlayerController {
     public ResponseEntity<Void> deletePlayer(@PathVariable Long id) {
         playerService.deletePlayer(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/move")
+    public ResponseEntity<PlayerDTO> movePlayer(@PathVariable Long id, @RequestParam int steps) {
+        PlayerDTO playerDTO = playerService.getPlayerById(id);
+        if (playerDTO != null) {
+            // Assuming the move logic is implemented in the service layer
+            PlayerDTO updatedPlayer = playerService.movePlayer(id, steps);
+            return ResponseEntity.ok(updatedPlayer);
+        }
+        return ResponseEntity.notFound().build();
     }
 }

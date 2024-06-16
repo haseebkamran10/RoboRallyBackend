@@ -1,5 +1,6 @@
 package dk.dtu.compute.se.pisd.roborally.api.service;
 
+import dk.dtu.compute.se.pisd.roborally.api.dto.GameSessionDTO;
 import dk.dtu.compute.se.pisd.roborally.api.model.Board;
 import dk.dtu.compute.se.pisd.roborally.api.model.GameSession;
 import dk.dtu.compute.se.pisd.roborally.api.model.Player;
@@ -37,52 +38,29 @@ public class GameSessionServiceImpl implements GameSessionService {
     }
 
     @Override
-    public GameSession createGameSession(GameSession gameSession) {
-        if (gameSession.getBoard() == null || gameSession.getBoard().getId() == null) {
-            throw new IllegalArgumentException("Board ID must not be null");
-        }
-
-        // Fetch the board from the database to ensure it exists
-        Board board = boardRepository.findById(gameSession.getBoard().getId())
-                .orElseThrow(() -> new IllegalArgumentException("Board not found"));
-
-        gameSession.setBoard(board);
-
-        // Ensure players are attached to the current session
-        List<Player> attachedPlayers = new ArrayList<>();
-        for (Player player : gameSession.getPlayers()) {
-            Player attachedPlayer = playerRepository.findById(player.getId())
-                    .orElseThrow(() -> new IllegalArgumentException("Player not found"));
-            attachedPlayer.setGameSession(gameSession);
-            attachedPlayers.add(attachedPlayer);
-        }
-        gameSession.setPlayers(attachedPlayers);
-
-        // Set the number of players
-        gameSession.setNumberOfPlayers(attachedPlayers.size());
-
-        // Set the host of the game session
-        if (!attachedPlayers.isEmpty()) {
-            gameSession.setHost(attachedPlayers.get(0));
-        }
-
-        // Generate a random 6-digit join code
-        gameSession.setJoinCode(String.format("%06d", (int) (Math.random() * 1000000)));
-
-        return gameSessionRepository.save(gameSession);
+    public GameSessionDTO createGameSession(GameSessionDTO gameSessionDTO) {
+        GameSession gameSession = convertToEntity(gameSessionDTO);
+        gameSession = gameSessionRepository.save(gameSession);
+        return convertToDTO(gameSession);
     }
 
-
     @Override
-    public GameSession updateGameSession(Long id, GameSession gameSessionDetails) {
+    public GameSessionDTO updateGameSession(Long id, GameSessionDTO gameSessionDTO) {
         GameSession gameSession = getGameSessionById(id);
         if (gameSession != null) {
-            gameSession.setBoard(gameSessionDetails.getBoard());
-            gameSession.setPlayers(gameSessionDetails.getPlayers());
-            gameSession.setNumberOfPlayers(gameSessionDetails.getNumberOfPlayers());
-            return gameSessionRepository.save(gameSession);
+            gameSession.setBoard(boardRepository.findById(gameSessionDTO.getBoardId()).orElse(null));
+            gameSession.setPlayers(new ArrayList<>());
+            for (Long playerId : gameSessionDTO.getPlayerIds()) {
+                Player player = playerRepository.findById(playerId).orElse(null);
+                if (player != null) {
+                    player.setGameSession(gameSession);
+                    gameSession.getPlayers().add(player);
+                }
+            }
+            gameSession.setNumberOfPlayers(gameSessionDTO.getNumberOfPlayers());
+            gameSession = gameSessionRepository.save(gameSession);
         }
-        return null;
+        return convertToDTO(gameSession);
     }
 
     @Override
@@ -130,5 +108,38 @@ public class GameSessionServiceImpl implements GameSessionService {
         return gameSessionRepository.save(gameSession);
     }
 
+    @Override
+    public GameSessionDTO convertToDTO(GameSession gameSession) {
+        GameSessionDTO gameSessionDTO = new GameSessionDTO();
+        gameSessionDTO.setId(gameSession.getId());
+        gameSessionDTO.setBoardId(gameSession.getBoard().getId());
+        gameSessionDTO.setPlayerIds(new ArrayList<>());
+        for (Player player : gameSession.getPlayers()) {
+            gameSessionDTO.getPlayerIds().add(player.getId());
+        }
+        gameSessionDTO.setNumberOfPlayers(gameSession.getNumberOfPlayers());
+        gameSessionDTO.setJoinCode(gameSession.getJoinCode());
+        gameSessionDTO.setHostId(gameSession.getHost().getId());
+        return gameSessionDTO;
+    }
 
+    private GameSession convertToEntity(GameSessionDTO gameSessionDTO) {
+        GameSession gameSession = new GameSession();
+        Board board = boardRepository.findById(gameSessionDTO.getBoardId())
+                .orElseThrow(() -> new IllegalArgumentException("Board not found"));
+        gameSession.setBoard(board);
+
+        List<Player> players = new ArrayList<>();
+        for (Long playerId : gameSessionDTO.getPlayerIds()) {
+            Player player = playerRepository.findById(playerId)
+                    .orElseThrow(() -> new IllegalArgumentException("Player not found"));
+            player.setGameSession(gameSession);
+            players.add(player);
+        }
+        gameSession.setPlayers(players);
+        gameSession.setNumberOfPlayers(players.size());
+        gameSession.setHost(players.get(0));  // Assuming the first player is the host
+        gameSession.setJoinCode(String.format("%06d", (int) (Math.random() * 1000000)));
+        return gameSession;
+    }
 }

@@ -1,20 +1,12 @@
 package dk.dtu.compute.se.pisd.roborally.api.model;
 
-import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-
 /**
- * Represents different phases in the game.
+ * Enumerates the various phases of a game turn in RoboRally. Each phase represents
+ * a distinct stage of gameplay, from setting up the game to executing programmed
+ * actions by the robots.
+ *
+ * @author Ekkart Kindler, ekki@dtu.dk
  */
-@Entity
-@Getter
-@Setter
-public class Phase {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    private String name;
+public enum Phase {
+    INITIALISATION, PROGRAMMING, ACTIVATION, PLAYER_INTERACTION
 }

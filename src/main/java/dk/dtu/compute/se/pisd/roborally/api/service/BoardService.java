@@ -1,5 +1,6 @@
 package dk.dtu.compute.se.pisd.roborally.api.service;
 
+import dk.dtu.compute.se.pisd.roborally.api.dto.BoardDTO;
 import dk.dtu.compute.se.pisd.roborally.api.model.Board;
 
 import java.util.List;
@@ -9,13 +10,15 @@ import java.util.List;
  */
 public interface BoardService {
 
-    List<Board> getAllBoards();
+    List<BoardDTO> getAllBoards();
 
-    Board getBoardById(Long id);
+    BoardDTO getBoardById(Long id);
 
-    Board createBoard(Board board);
+    BoardDTO createBoard(BoardDTO boardDTO);
 
-    Board updateBoard(Long id, Board boardDetails);
+    BoardDTO updateBoard(Long id, BoardDTO boardDTO);
 
     void deleteBoard(Long id);
+
+    Board convertToEntity(BoardDTO boardDTO); // Add this method
 }
