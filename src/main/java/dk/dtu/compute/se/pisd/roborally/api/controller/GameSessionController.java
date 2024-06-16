@@ -64,4 +64,16 @@ public class GameSessionController {
         GameSession updatedGameSession = gameSessionService.joinGameSessionByCode(joinCode, player);
         return ResponseEntity.ok(updatedGameSession);
     }
+
+    @PostMapping("/{gameId}/players/{playerId}/ready")
+    public ResponseEntity<GameSession> markPlayerReady(@PathVariable Long gameId, @PathVariable Long playerId) {
+        GameSession updatedGameSession = gameSessionService.markPlayerReady(gameId, playerId);
+        return ResponseEntity.ok(updatedGameSession);
+    }
+
+    @GetMapping("/{gameId}/ready")
+    public ResponseEntity<Boolean> areAllPlayersReady(@PathVariable Long gameId) {
+        boolean allReady = gameSessionService.areAllPlayersReady(gameId);
+        return ResponseEntity.ok(allReady);
+    }
 }

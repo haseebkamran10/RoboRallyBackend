@@ -17,7 +17,13 @@ public class Player {
     private String name;
     private String avatar;
 
+
+
+
     @ManyToOne
     @JsonBackReference
     private GameSession gameSession;
+
+    @Transient
+    private boolean ready = false;
 }

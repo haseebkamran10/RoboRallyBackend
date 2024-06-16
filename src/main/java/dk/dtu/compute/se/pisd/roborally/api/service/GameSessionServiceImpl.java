@@ -121,6 +121,7 @@ public class GameSessionServiceImpl implements GameSessionService {
                 .orElseThrow(() -> new IllegalArgumentException("Player not found"));
 
         attachedPlayer.setGameSession(gameSession);
+        attachedPlayer.setReady(false); // Set ready to false initially
         gameSession.getPlayers().add(attachedPlayer);
 
         // Update the number of players in the game session
@@ -130,5 +131,44 @@ public class GameSessionServiceImpl implements GameSessionService {
         return gameSessionRepository.save(gameSession);
     }
 
+    @Override
+    public GameSession markPlayerReady(Long gameId, Long playerId) {
+        GameSession gameSession = getGameSessionById(gameId);
+        if (gameSession == null) {
+            throw new IllegalArgumentException("Game session not found");
+        }
 
+        Player player = playerRepository.findById(playerId)
+                .orElseThrow(() -> new IllegalArgumentException("Player not found"));
+
+        if (!gameSession.getPlayers().contains(player)) {
+            throw new IllegalArgumentException("Player does not belong to this game session");
+        }
+
+        player.setReady(true);
+        playerRepository.save(player);
+
+        if (gameSession.getPlayers().stream().allMatch(Player::isReady)) {
+            startGame(gameSession);
+        }
+
+        return gameSession;
+    }
+
+    @Override
+    public boolean areAllPlayersReady(Long gameId) {
+        GameSession gameSession = getGameSessionById(gameId);
+        if (gameSession == null) {
+            throw new IllegalArgumentException("Game session not found");
+        }
+
+        return gameSession.getPlayers().stream().allMatch(Player::isReady);
+    }
+
+    private void startGame(GameSession gameSession) {
+        // Logic to start the game
+        System.out.println("Game is starting with all players ready!");
+    }
 }
+
+
