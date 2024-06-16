@@ -1,6 +1,7 @@
 package dk.dtu.compute.se.pisd.roborally.api.service;
 
 import dk.dtu.compute.se.pisd.roborally.api.dto.GameSessionDTO;
+import dk.dtu.compute.se.pisd.roborally.api.dto.PlayerDTO;
 import dk.dtu.compute.se.pisd.roborally.api.model.Board;
 import dk.dtu.compute.se.pisd.roborally.api.model.GameSession;
 import dk.dtu.compute.se.pisd.roborally.api.model.Player;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class GameSessionServiceImpl implements GameSessionService {
@@ -39,8 +41,31 @@ public class GameSessionServiceImpl implements GameSessionService {
 
     @Override
     public GameSessionDTO createGameSession(GameSessionDTO gameSessionDTO) {
-        GameSession gameSession = convertToEntity(gameSessionDTO);
+        GameSession gameSession = new GameSession();
+
+        // Find the board by ID
+        Board board = boardRepository.findById(gameSessionDTO.getBoardId())
+                .orElseThrow(() -> new IllegalArgumentException("Board not found"));
+        gameSession.setBoard(board);
+
+        // Find the host player by ID
+        Player host = playerRepository.findById(gameSessionDTO.getHostId())
+                .orElseThrow(() -> new IllegalArgumentException("Host not found"));
+        gameSession.setHost(host);
+
+        // Add the host to the players list
+        List<Player> players = new ArrayList<>();
+        players.add(host);
+        gameSession.setPlayers(players);
+
+        // Set the number of players
+        gameSession.setNumberOfPlayers(1);
+
+        // Generate a random join code
+        gameSession.setJoinCode(String.format("%06d", (int) (Math.random() * 1000000)));
+
         gameSession = gameSessionRepository.save(gameSession);
+
         return convertToDTO(gameSession);
     }
 
@@ -81,7 +106,6 @@ public class GameSessionServiceImpl implements GameSessionService {
         attachedPlayer.setGameSession(gameSession);
         gameSession.getPlayers().add(attachedPlayer);
 
-        // Update the number of players in the game session
         gameSession.setNumberOfPlayers(gameSession.getPlayers().size());
 
         playerRepository.save(attachedPlayer);
@@ -101,7 +125,6 @@ public class GameSessionServiceImpl implements GameSessionService {
         attachedPlayer.setGameSession(gameSession);
         gameSession.getPlayers().add(attachedPlayer);
 
-        // Update the number of players in the game session
         gameSession.setNumberOfPlayers(gameSession.getPlayers().size());
 
         playerRepository.save(attachedPlayer);
@@ -113,10 +136,10 @@ public class GameSessionServiceImpl implements GameSessionService {
         GameSessionDTO gameSessionDTO = new GameSessionDTO();
         gameSessionDTO.setId(gameSession.getId());
         gameSessionDTO.setBoardId(gameSession.getBoard().getId());
-        gameSessionDTO.setPlayerIds(new ArrayList<>());
-        for (Player player : gameSession.getPlayers()) {
-            gameSessionDTO.getPlayerIds().add(player.getId());
-        }
+        gameSessionDTO.setPlayerIds(gameSession.getPlayers().stream().map(Player::getId).collect(Collectors.toList()));
+        gameSessionDTO.setPlayers(gameSession.getPlayers().stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList()));
         gameSessionDTO.setNumberOfPlayers(gameSession.getNumberOfPlayers());
         gameSessionDTO.setJoinCode(gameSession.getJoinCode());
         gameSessionDTO.setHostId(gameSession.getHost().getId());
@@ -141,5 +164,9 @@ public class GameSessionServiceImpl implements GameSessionService {
         gameSession.setHost(players.get(0));  // Assuming the first player is the host
         gameSession.setJoinCode(String.format("%06d", (int) (Math.random() * 1000000)));
         return gameSession;
+    }
+
+    private PlayerDTO convertToDTO(Player player) {
+        return new PlayerDTO(player.getId(), player.getName(), player.getAvatar());
     }
 }

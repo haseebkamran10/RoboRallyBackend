@@ -5,12 +5,12 @@ import java.util.List;
 public class GameSessionDTO {
     private Long id;
     private Long boardId;
-    private List<Long> playerIds;
+    private List<PlayerDTO> players; // New field for detailed player info
     private int numberOfPlayers;
     private String joinCode;
     private Long hostId;
 
-    // Getters and Setters
+    // Getters and Setters for existing fields
     public Long getId() {
         return id;
     }
@@ -57,5 +57,14 @@ public class GameSessionDTO {
 
     public void setHostId(Long hostId) {
         this.hostId = hostId;
+    }
+
+    // Getters and Setters for the new field
+    public List<PlayerDTO> getPlayers() {
+        return players;
+    }
+
+    public void setPlayers(List<PlayerDTO> players) {
+        this.players = players;
     }
 }
