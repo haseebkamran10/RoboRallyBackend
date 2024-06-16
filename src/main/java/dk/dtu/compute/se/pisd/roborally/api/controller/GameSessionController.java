@@ -7,11 +7,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/gamesessions")
@@ -60,15 +60,22 @@ public class GameSessionController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/{gameId}/join")
-    public ResponseEntity<GameSessionDTO> joinGameSession(@PathVariable Long gameId, @RequestBody Player player) {
-        GameSessionDTO updatedGameSession = gameSessionService.convertToDTO(gameSessionService.joinGameSession(gameId, player));
+    @PostMapping("/join/{joinCode}")
+    public ResponseEntity<GameSessionDTO> joinGameSessionByCode(@PathVariable String joinCode, @RequestBody PlayerIdRequest request) {
+        Long playerId = request.getPlayerId();
+        GameSessionDTO updatedGameSession = gameSessionService.convertToDTO(gameSessionService.joinGameSessionByCode(joinCode, playerId));
         return ResponseEntity.ok(updatedGameSession);
     }
 
-    @PostMapping("/join/{joinCode}")
-    public ResponseEntity<GameSessionDTO> joinGameSessionByCode(@PathVariable String joinCode, @RequestBody Player player) {
-        GameSessionDTO updatedGameSession = gameSessionService.convertToDTO(gameSessionService.joinGameSessionByCode(joinCode, player));
-        return ResponseEntity.ok(updatedGameSession);
+    public static class PlayerIdRequest {
+        private Long playerId;
+
+        public Long getPlayerId() {
+            return playerId;
+        }
+
+        public void setPlayerId(Long playerId) {
+            this.playerId = playerId;
+        }
     }
 }

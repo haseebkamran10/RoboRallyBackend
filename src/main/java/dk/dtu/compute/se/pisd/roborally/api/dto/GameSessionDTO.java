@@ -5,7 +5,7 @@ import java.util.List;
 public class GameSessionDTO {
     private Long id;
     private Long boardId;
-    private List<PlayerDTO> players; // New field for detailed player info
+    private List<PlayerDTO> players;
     private int numberOfPlayers;
     private String joinCode;
     private Long hostId;
@@ -27,12 +27,12 @@ public class GameSessionDTO {
         this.boardId = boardId;
     }
 
-    public List<Long> getPlayerIds() {
-        return playerIds;
+    public List<PlayerDTO> getPlayers() {
+        return players;
     }
 
-    public void setPlayerIds(List<Long> playerIds) {
-        this.playerIds = playerIds;
+    public void setPlayers(List<PlayerDTO> players) {
+        this.players = players;
     }
 
     public int getNumberOfPlayers() {
@@ -57,14 +57,5 @@ public class GameSessionDTO {
 
     public void setHostId(Long hostId) {
         this.hostId = hostId;
-    }
-
-    // Getters and Setters for the new field
-    public List<PlayerDTO> getPlayers() {
-        return players;
-    }
-
-    public void setPlayers(List<PlayerDTO> players) {
-        this.players = players;
     }
 }

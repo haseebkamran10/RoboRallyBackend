@@ -59,7 +59,7 @@ public class GameSessionServiceImpl implements GameSessionService {
         gameSession.setPlayers(players);
 
         // Set the number of players
-        gameSession.setNumberOfPlayers(1);
+        gameSession.setNumberOfPlayers(players.size());
 
         // Generate a random join code
         gameSession.setJoinCode(String.format("%06d", (int) (Math.random() * 1000000)));
@@ -75,14 +75,14 @@ public class GameSessionServiceImpl implements GameSessionService {
         if (gameSession != null) {
             gameSession.setBoard(boardRepository.findById(gameSessionDTO.getBoardId()).orElse(null));
             gameSession.setPlayers(new ArrayList<>());
-            for (Long playerId : gameSessionDTO.getPlayerIds()) {
-                Player player = playerRepository.findById(playerId).orElse(null);
+            for (PlayerDTO playerDTO : gameSessionDTO.getPlayers()) {
+                Player player = playerRepository.findById(playerDTO.getId()).orElse(null);
                 if (player != null) {
                     player.setGameSession(gameSession);
                     gameSession.getPlayers().add(player);
                 }
             }
-            gameSession.setNumberOfPlayers(gameSessionDTO.getNumberOfPlayers());
+            gameSession.setNumberOfPlayers(gameSession.getPlayers().size());
             gameSession = gameSessionRepository.save(gameSession);
         }
         return convertToDTO(gameSession);
@@ -113,13 +113,13 @@ public class GameSessionServiceImpl implements GameSessionService {
     }
 
     @Override
-    public GameSession joinGameSessionByCode(String joinCode, Player player) {
+    public GameSession joinGameSessionByCode(String joinCode, Long playerId) {
         GameSession gameSession = gameSessionRepository.findByJoinCode(joinCode);
         if (gameSession == null) {
             throw new IllegalArgumentException("Game session not found");
         }
 
-        Player attachedPlayer = playerRepository.findById(player.getId())
+        Player attachedPlayer = playerRepository.findById(playerId)
                 .orElseThrow(() -> new IllegalArgumentException("Player not found"));
 
         attachedPlayer.setGameSession(gameSession);
@@ -136,7 +136,6 @@ public class GameSessionServiceImpl implements GameSessionService {
         GameSessionDTO gameSessionDTO = new GameSessionDTO();
         gameSessionDTO.setId(gameSession.getId());
         gameSessionDTO.setBoardId(gameSession.getBoard().getId());
-        gameSessionDTO.setPlayerIds(gameSession.getPlayers().stream().map(Player::getId).collect(Collectors.toList()));
         gameSessionDTO.setPlayers(gameSession.getPlayers().stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList()));
@@ -153,8 +152,8 @@ public class GameSessionServiceImpl implements GameSessionService {
         gameSession.setBoard(board);
 
         List<Player> players = new ArrayList<>();
-        for (Long playerId : gameSessionDTO.getPlayerIds()) {
-            Player player = playerRepository.findById(playerId)
+        for (PlayerDTO playerDTO : gameSessionDTO.getPlayers()) {
+            Player player = playerRepository.findById(playerDTO.getId())
                     .orElseThrow(() -> new IllegalArgumentException("Player not found"));
             player.setGameSession(gameSession);
             players.add(player);
