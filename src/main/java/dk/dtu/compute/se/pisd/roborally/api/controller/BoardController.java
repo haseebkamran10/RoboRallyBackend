@@ -1,5 +1,7 @@
 package dk.dtu.compute.se.pisd.roborally.api.controller;
 
+import dk.dtu.compute.se.pisd.roborally.api.dto.BoardDTO;
+import dk.dtu.compute.se.pisd.roborally.api.mapper.BoardMapper;
 import dk.dtu.compute.se.pisd.roborally.api.model.Board;
 import dk.dtu.compute.se.pisd.roborally.api.service.BoardService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/boards")
@@ -15,27 +18,33 @@ public class BoardController {
     @Autowired
     private BoardService boardService;
 
+    private final BoardMapper boardMapper = BoardMapper.INSTANCE;
+
     @GetMapping
-    public List<Board> getAllBoards() {
-        return boardService.getAllBoards();
+    public List<BoardDTO> getAllBoards() {
+        return boardService.getAllBoards().stream()
+                .map(boardMapper::boardToBoardDTO)
+                .collect(Collectors.toList());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Board> getBoardById(@PathVariable Long id) {
+    public ResponseEntity<BoardDTO> getBoardById(@PathVariable Long id) {
         Board board = boardService.getBoardById(id);
-        return ResponseEntity.ok(board);
+        return ResponseEntity.ok(boardMapper.boardToBoardDTO(board));
     }
 
-    @PostMapping
-    public ResponseEntity<Board> createBoard(@RequestBody Board board) {
+    @PostMapping("/create-new-board")
+    public ResponseEntity<BoardDTO> createBoard(@RequestBody BoardDTO boardDTO) {
+        Board board = boardMapper.boardDTOToBoard(boardDTO);
         Board savedBoard = boardService.createBoard(board);
-        return ResponseEntity.ok(savedBoard);
+        return ResponseEntity.ok(boardMapper.boardToBoardDTO(savedBoard));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Board> updateBoard(@PathVariable Long id, @RequestBody Board boardDetails) {
+    public ResponseEntity<BoardDTO> updateBoard(@PathVariable Long id, @RequestBody BoardDTO boardDTO) {
+        Board boardDetails = boardMapper.boardDTOToBoard(boardDTO);
         Board updatedBoard = boardService.updateBoard(id, boardDetails);
-        return ResponseEntity.ok(updatedBoard);
+        return ResponseEntity.ok(boardMapper.boardToBoardDTO(updatedBoard));
     }
 
     @DeleteMapping("/{id}")
