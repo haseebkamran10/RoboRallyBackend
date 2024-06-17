@@ -17,5 +17,8 @@ public interface GameSessionService {
     GameSession joinGameSessionByCode(String joinCode, Player player);
 
     GameSession markPlayerReady(Long gameId, Long playerId);
+
     boolean areAllPlayersReady(Long gameId);
+
+
 }

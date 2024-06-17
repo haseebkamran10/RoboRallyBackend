@@ -24,6 +24,6 @@ public class Player {
     @JsonBackReference
     private GameSession gameSession;
 
-    @Transient
+
     private boolean ready = false;
 }

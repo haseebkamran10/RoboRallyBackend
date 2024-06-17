@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/gamesessions")
@@ -65,11 +66,19 @@ public class GameSessionController {
         return ResponseEntity.ok(updatedGameSession);
     }
 
-    @PostMapping("/{gameId}/players/{playerId}/ready")
-    public ResponseEntity<GameSession> markPlayerReady(@PathVariable Long gameId, @PathVariable Long playerId) {
+    @PostMapping("/mark-ready")
+    public ResponseEntity<GameSession> markPlayerReady(@RequestBody Map<String, Long> ids) {
+        Long gameId = ids.get("gameId");
+        Long playerId = ids.get("playerId");
+        if (gameId == null || playerId == null) {
+            return ResponseEntity.badRequest().body(null);
+        }
         GameSession updatedGameSession = gameSessionService.markPlayerReady(gameId, playerId);
         return ResponseEntity.ok(updatedGameSession);
     }
+
+
+
 
     @GetMapping("/{gameId}/ready")
     public ResponseEntity<Boolean> areAllPlayersReady(@PathVariable Long gameId) {

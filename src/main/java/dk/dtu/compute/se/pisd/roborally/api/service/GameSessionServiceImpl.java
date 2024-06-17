@@ -155,6 +155,7 @@ public class GameSessionServiceImpl implements GameSessionService {
         return gameSession;
     }
 
+
     @Override
     public boolean areAllPlayersReady(Long gameId) {
         GameSession gameSession = getGameSessionById(gameId);
