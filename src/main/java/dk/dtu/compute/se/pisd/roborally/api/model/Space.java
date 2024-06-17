@@ -1,12 +1,12 @@
 package dk.dtu.compute.se.pisd.roborally.api.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import lombok.Getter;
 import lombok.Setter;
 
-/**
- * Represents spaces on the game board.
- */
 @Entity
 @Getter
 @Setter
@@ -16,5 +16,8 @@ public class Space {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String name;
+    private int x;
+    private int y;
+
+    // Add any other relevant fields and methods
 }

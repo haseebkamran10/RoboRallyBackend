@@ -20,4 +20,10 @@ public class Player {
     @ManyToOne
     @JsonBackReference
     private GameSession gameSession;
+
+    @ManyToOne
+    private Space space;
+
+    @Enumerated(EnumType.STRING)
+    private Heading heading;
 }
