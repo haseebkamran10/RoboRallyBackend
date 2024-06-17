@@ -26,4 +26,20 @@ public class Player {
 
     @Enumerated(EnumType.STRING)
     private Heading heading;
+
+    private int energy = 100; // Default energy level
+
+    // Method to gain energy
+    public void gainEnergy(int amount) {
+        this.energy += amount;
+    }
+
+    // Method to consume energy
+    public boolean consumeEnergy(int amount) {
+        if (this.energy >= amount) {
+            this.energy -= amount;
+            return true;
+        }
+        return false;
+    }
 }
