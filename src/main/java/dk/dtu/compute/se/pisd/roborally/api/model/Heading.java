@@ -1,20 +1,17 @@
 package dk.dtu.compute.se.pisd.roborally.api.model;
 
-import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+public enum Heading {
+    NORTH,
+    EAST,
+    SOUTH,
+    WEST;
 
-/**
- * Represents the heading of a robot.
- */
-@Entity
-@Getter
-@Setter
-public class Heading {
+    public Heading next() {
+        return values()[(this.ordinal() + 1) % values().length];
+    }
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    private String name;
+    // Method to get the previous heading in counter-clockwise direction
+    public Heading prev() {
+        return values()[(this.ordinal() + values().length - 1) % values().length];
+    }
 }
