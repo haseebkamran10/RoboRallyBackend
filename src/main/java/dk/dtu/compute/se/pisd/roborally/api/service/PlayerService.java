@@ -20,4 +20,6 @@ public interface PlayerService {
     void deletePlayer(Long id);
     Player movePlayer(Long playerId, int x, int y);
     Player changePlayerDirection(Long playerId, String direction);
+    Player jumpPlayer(Long playerId, int targetX, int targetY);
+
 }
