@@ -54,4 +54,16 @@ public class PlayerController {
         playerService.deletePlayer(id);
         return ResponseEntity.noContent().build();
     }
+    @PutMapping("/{id}/move")
+    public ResponseEntity<PlayerDTO> movePlayer(@PathVariable Long id, @RequestParam int x, @RequestParam int y) {
+        Player updatedPlayer = playerService.movePlayer(id, x, y);
+        return ResponseEntity.ok(playerMapper.playerToPlayerDTO(updatedPlayer));
+    }
+
+    @PutMapping("/{id}/change-direction")
+    public ResponseEntity<PlayerDTO> changePlayerDirection(@PathVariable Long id, @RequestParam String direction) {
+        Player updatedPlayer = playerService.changePlayerDirection(id, direction);
+        return ResponseEntity.ok(playerMapper.playerToPlayerDTO(updatedPlayer));
+    }
 }
+

@@ -18,4 +18,6 @@ public interface PlayerService {
     Player updatePlayer(Long id, Player playerDetails);
 
     void deletePlayer(Long id);
+    Player movePlayer(Long playerId, int x, int y);
+    Player changePlayerDirection(Long playerId, String direction);
 }
