@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -77,5 +78,22 @@ public class GameSessionController {
         Player player = playerMapper.playerDTOToPlayer(playerDTO);
         GameSession updatedGameSession = gameSessionService.joinGameSessionByCode(joinCode, player);
         return ResponseEntity.ok(gameSessionMapper.gameSessionToGameSessionDTO(updatedGameSession));
+    }
+
+    @PostMapping("/mark-ready")
+    public ResponseEntity<GameSessionDTO> markPlayerReady(@RequestBody Map<String, Long> ids) {
+        Long gameId = ids.get("gameId");
+        Long playerId = ids.get("playerId");
+        if (gameId == null || playerId == null) {
+            return ResponseEntity.badRequest().body(null);
+        }
+        GameSession updatedGameSession = gameSessionService.markPlayerReady(gameId, playerId);
+        return ResponseEntity.ok(gameSessionMapper.gameSessionToGameSessionDTO(updatedGameSession));
+    }
+
+    @GetMapping("/{gameId}/ready")
+    public ResponseEntity<Boolean> areAllPlayersReady(@PathVariable Long gameId) {
+        boolean allReady = gameSessionService.areAllPlayersReady(gameId);
+        return ResponseEntity.ok(allReady);
     }
 }

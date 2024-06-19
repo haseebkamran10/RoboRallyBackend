@@ -9,4 +9,7 @@ public class PlayerDTO {
     private Long id;
     private String name;
     private String avatar;
+    private Long gameSessionId;
+    private boolean ready;
+
 }

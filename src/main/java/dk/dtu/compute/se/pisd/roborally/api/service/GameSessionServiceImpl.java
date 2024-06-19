@@ -1,5 +1,6 @@
 package dk.dtu.compute.se.pisd.roborally.api.service;
 
+import dk.dtu.compute.se.pisd.roborally.api.dto.CreateGameSessionDTO;
 import dk.dtu.compute.se.pisd.roborally.api.model.Board;
 import dk.dtu.compute.se.pisd.roborally.api.model.GameSession;
 import dk.dtu.compute.se.pisd.roborally.api.model.Player;
@@ -37,41 +38,26 @@ public class GameSessionServiceImpl implements GameSessionService {
     }
 
     @Override
-    public GameSession createGameSession(GameSession gameSession) {
-        if (gameSession.getBoard() == null || gameSession.getBoard().getId() == null) {
-            throw new IllegalArgumentException("Board ID must not be null");
-        }
-
-        // Fetch the board from the database to ensure it exists
-        Board board = boardRepository.findById(gameSession.getBoard().getId())
+    public GameSession createGameSession(CreateGameSessionDTO createGameSessionDTO) {
+        Board board = boardRepository.findById(createGameSessionDTO.getBoardId())
                 .orElseThrow(() -> new IllegalArgumentException("Board not found"));
 
+        Player player = playerRepository.findById(createGameSessionDTO.getPlayerId())
+                .orElseThrow(() -> new IllegalArgumentException("Player not found"));
+
+        GameSession gameSession = new GameSession();
         gameSession.setBoard(board);
-
-        // Ensure players are attached to the current session
-        List<Player> attachedPlayers = new ArrayList<>();
-        for (Player player : gameSession.getPlayers()) {
-            Player attachedPlayer = playerRepository.findById(player.getId())
-                    .orElseThrow(() -> new IllegalArgumentException("Player not found"));
-            attachedPlayer.setGameSession(gameSession);
-            attachedPlayers.add(attachedPlayer);
-        }
-        gameSession.setPlayers(attachedPlayers);
-
-        // Set the number of players
-        gameSession.setNumberOfPlayers(attachedPlayers.size());
-
-        // Set the host of the game session
-        if (!attachedPlayers.isEmpty()) {
-            gameSession.setHost(attachedPlayers.get(0));
-        }
-
-        // Generate a random 6-digit join code
+        gameSession.setHost(player);
         gameSession.setJoinCode(String.format("%06d", (int) (Math.random() * 1000000)));
+
+        List<Player> players = new ArrayList<>();
+        player.setGameSession(gameSession);
+        players.add(player);
+        gameSession.setPlayers(players);
+        gameSession.setNumberOfPlayers(players.size());
 
         return gameSessionRepository.save(gameSession);
     }
-
 
     @Override
     public GameSession updateGameSession(Long id, GameSession gameSessionDetails) {
@@ -155,7 +141,6 @@ public class GameSessionServiceImpl implements GameSessionService {
         return gameSession;
     }
 
-
     @Override
     public boolean areAllPlayersReady(Long gameId) {
         GameSession gameSession = getGameSessionById(gameId);
@@ -171,5 +156,3 @@ public class GameSessionServiceImpl implements GameSessionService {
         System.out.println("Game is starting with all players ready!");
     }
 }
-
-

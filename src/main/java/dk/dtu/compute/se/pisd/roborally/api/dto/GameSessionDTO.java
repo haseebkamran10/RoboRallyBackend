@@ -10,8 +10,8 @@ import java.util.List;
 public class GameSessionDTO {
     private Long id;
     private Long boardId;
-    private List<PlayerDTO> players;
-    private int numberOfPlayers;
-    private String joinCode;
     private Long hostId;
+    private String joinCode;
+    private int numberOfPlayers;
+
 }
