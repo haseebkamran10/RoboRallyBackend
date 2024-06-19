@@ -102,6 +102,9 @@ public class Space {
     }
 
     public boolean isObstacle() {
+        return isObstacle;
+    }
+    public boolean isFreeOfObstacles() {
         return !isObstacle;
     }
 }

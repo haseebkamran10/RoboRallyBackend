@@ -54,6 +54,7 @@ public class PlayerController {
         playerService.deletePlayer(id);
         return ResponseEntity.noContent().build();
     }
+
     @PutMapping("/{id}/move")
     public ResponseEntity<PlayerDTO> movePlayer(@PathVariable Long id, @RequestParam int x, @RequestParam int y) {
         Player updatedPlayer = playerService.movePlayer(id, x, y);
@@ -65,5 +66,10 @@ public class PlayerController {
         Player updatedPlayer = playerService.changePlayerDirection(id, direction);
         return ResponseEntity.ok(playerMapper.playerToPlayerDTO(updatedPlayer));
     }
-}
 
+    @PutMapping("/{id}/jump")
+    public ResponseEntity<PlayerDTO> jumpPlayer(@PathVariable Long id, @RequestParam int targetX, @RequestParam int targetY) {
+        Player updatedPlayer = playerService.jumpPlayer(id, targetX, targetY);
+        return ResponseEntity.ok(playerMapper.playerToPlayerDTO(updatedPlayer));
+    }
+}

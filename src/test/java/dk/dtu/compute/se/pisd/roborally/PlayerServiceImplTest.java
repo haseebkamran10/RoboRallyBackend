@@ -134,4 +134,110 @@ public class PlayerServiceImplTest {
         verify(playerRepository, times(1)).findById(1L);
         verify(playerRepository, times(0)).save(any(Player.class));
     }
+
+    @Test
+    void testJumpPlayer_Success() {
+        Player player = new Player();
+        player.setId(1L);
+        player.setName("Player1");
+        player.setEnergy(100);  // Ensure player has enough energy
+
+        Space currentSpace = new Space();
+        currentSpace.setX(0);
+        currentSpace.setY(0);
+        currentSpace.setJumpPad(true);
+        currentSpace.setObstacle(false);  // Current space is not an obstacle
+
+        Space targetSpace = new Space();
+        targetSpace.setX(1);
+        targetSpace.setY(1);
+        targetSpace.setObstacle(true);  // Target space is an obstacle
+
+        player.setSpace(currentSpace);
+
+        when(playerRepository.findById(1L)).thenReturn(Optional.of(player));
+        when(spaceRepository.findByXAndY(1, 1)).thenReturn(targetSpace);
+        when(playerRepository.save(any(Player.class))).thenReturn(player);
+
+        Player result = playerService.jumpPlayer(1L, 1, 1);
+
+        assertNotNull(result, "The result should not be null");
+        assertEquals(targetSpace, result.getSpace(), "The player should be at the target space");
+        assertEquals(90, result.getEnergy(), "The player's energy should be 90 after jumping");  // Assuming jumping costs 10 energy
+
+        verify(playerRepository, times(1)).save(player);
+    }
+
+    @Test
+    void testMultipleJumps() {
+        Player player = new Player();
+        player.setId(1L);
+        player.setName("Player1");
+        player.setEnergy(100);  // Reset energy
+
+        Space currentSpace = new Space();
+        currentSpace.setX(0);
+        currentSpace.setY(0);
+        currentSpace.setJumpPad(true);
+        currentSpace.setObstacle(false);  // Current space is not an obstacle
+
+        Space targetSpace1 = new Space();
+        targetSpace1.setX(1);
+        targetSpace1.setY(1);
+        targetSpace1.setJumpPad(true);  // First target space is also a jump pad
+        targetSpace1.setObstacle(true);  // First target space is an obstacle
+
+        Space targetSpace2 = new Space();
+        targetSpace2.setX(2);
+        targetSpace2.setY(2);
+        targetSpace2.setJumpPad(true);  // Second target space is also a jump pad
+        targetSpace2.setObstacle(true);  // Second target space is an obstacle
+
+        player.setSpace(currentSpace);
+
+        when(playerRepository.findById(1L)).thenReturn(Optional.of(player));
+        when(spaceRepository.findByXAndY(1, 1)).thenReturn(targetSpace1);
+        when(spaceRepository.findByXAndY(2, 2)).thenReturn(targetSpace2);
+        when(playerRepository.save(any(Player.class))).thenReturn(player);
+
+        // First jump
+        Player result1 = playerService.jumpPlayer(1L, 1, 1);
+        assertNotNull(result1, "The result of the first jump should not be null");
+        assertEquals(targetSpace1, result1.getSpace(), "The player should be at the first target space");
+        assertEquals(90, result1.getEnergy(), "The player's energy should be 90 after the first jump");
+
+        // Second jump
+        Player result2 = playerService.jumpPlayer(1L, 2, 2);
+        assertNotNull(result2, "The result of the second jump should not be null");
+        assertEquals(targetSpace2, result2.getSpace(), "The player should be at the second target space");
+        assertEquals(80, result2.getEnergy(), "The player's energy should be 80 after the second jump");
+
+        verify(playerRepository, times(2)).save(player);
+    }
+
+
+    @Test
+    void testJumpPlayer_Failure_InvalidTargetSpace() {
+        Player player = new Player();
+        player.setId(1L);
+        player.setName("Player1");
+        player.setEnergy(100);
+
+        Space currentSpace = new Space();
+        currentSpace.setX(0);
+        currentSpace.setY(0);
+        currentSpace.setJumpPad(true);
+
+        player.setSpace(currentSpace);
+
+        when(playerRepository.findById(1L)).thenReturn(Optional.of(player));
+        when(spaceRepository.findByXAndY(1, 1)).thenReturn(null);
+
+        Player result = playerService.jumpPlayer(1L, 1, 1);
+
+        assertNull(result);
+        assertEquals(currentSpace, player.getSpace());
+        assertEquals(100, player.getEnergy());
+        verify(playerRepository, never()).save(player);
+    }
 }

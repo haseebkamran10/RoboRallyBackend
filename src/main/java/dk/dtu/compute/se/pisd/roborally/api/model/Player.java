@@ -20,6 +20,9 @@ public class Player {
     @JsonBackReference
     private GameSession gameSession;
 
+    // Setter for space with additional logic if needed
+    // Setter for space with additional logic if needed
+    @Setter
     @ManyToOne
     private Space space;
 
@@ -41,19 +44,28 @@ public class Player {
         }
         return false;
     }
+
+    // Method to handle jumping over obstacles
     public boolean jump(Space targetSpace) {
+        System.out.println("Current space isJumpPad: " + space.isJumpPad());
+        System.out.println("Target space isObstacle: " + targetSpace.isObstacle());
+        System.out.println("Player energy before jump: " + this.energy);
+
         if (space.isJumpPad() && targetSpace.isObstacle() && consumeEnergy(10)) { // Assuming jumping costs 10 energy
+            System.out.println("Jump conditions met, setting new space.");
             setSpace(targetSpace);
             return true;
         }
+        System.out.println("Jump conditions not met.");
         return false;
     }
+
 
     // Method to handle sliding on ice tiles
     public boolean slide(Heading direction) {
         if (space.isIceTile()) {
             Space nextSpace = getNextSpaceInDirection(space, direction);
-            while (nextSpace != null && nextSpace.isIceTile() && nextSpace.isObstacle()) {
+            while (nextSpace != null && nextSpace.isIceTile() && !nextSpace.isObstacle()) {
                 setSpace(nextSpace);
                 nextSpace = getNextSpaceInDirection(nextSpace, direction);
             }
@@ -92,17 +104,17 @@ public class Player {
 
         if (targetSpace != null) {
             // Handle jumping
-            if (space.isJumpPad() && jump(targetSpace)) {
+            if (jump(targetSpace)) {
                 return true;
             }
 
             // Handle sliding
-            if (space.isIceTile() && slide(direction)) {
+            if (slide(direction)) {
                 return true;
             }
 
             // Normal movement
-            if (targetSpace.isObstacle() && consumeEnergy(1)) { // Assuming moving one space costs 1 energy
+            if (!targetSpace.isObstacle() && consumeEnergy(1)) { // Assuming moving one space costs 1 energy
                 setSpace(targetSpace);
                 return true;
             }
@@ -110,11 +122,4 @@ public class Player {
         return false;
     }
 
-    // Setter for space with additional logic if needed
-    public void setSpace(Space newSpace) {
-        this.space = newSpace;
-    }
 }
-
-// Method to handle jumping over obstacles
-

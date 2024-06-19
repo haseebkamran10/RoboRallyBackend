@@ -83,4 +83,15 @@ public class PlayerServiceImpl implements PlayerService {
         }
         return null;
     }
+
+    public Player jumpPlayer(Long playerId, int targetX, int targetY) {
+        Player player = getPlayerById(playerId);
+        if (player != null) {
+            Space targetSpace = spaceRepository.findByXAndY(targetX, targetY);
+            if (targetSpace != null && player.jump(targetSpace)) {
+                return playerRepository.save(player);
+            }
+        }
+        return null;
+    }
 }
