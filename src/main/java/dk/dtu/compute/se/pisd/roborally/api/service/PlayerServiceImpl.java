@@ -4,6 +4,7 @@ import dk.dtu.compute.se.pisd.roborally.api.model.Heading;
 import dk.dtu.compute.se.pisd.roborally.api.model.Player;
 import dk.dtu.compute.se.pisd.roborally.api.model.Space;
 import dk.dtu.compute.se.pisd.roborally.api.repository.PlayerRepository;
+import dk.dtu.compute.se.pisd.roborally.api.websocket.GameEventHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import dk.dtu.compute.se.pisd.roborally.api.repository.SpaceRepository;
@@ -22,6 +23,8 @@ public class PlayerServiceImpl implements PlayerService {
     private PlayerRepository playerRepository;
     @Autowired
     private SpaceRepository spaceRepository;
+    @Autowired
+    private GameEventHandler gameEventHandler;
 
     @Override
     public List<Player> getAllPlayers() {
@@ -62,7 +65,12 @@ public class PlayerServiceImpl implements PlayerService {
             Space space = spaceRepository.findByXAndY(x, y);
             if (space != null) {
                 player.setSpace(space);
-                return playerRepository.save(player);
+                playerRepository.save(player);
+
+                // Broadcast the move to all connected clients
+                gameEventHandler.broadcastPlayerMove(playerId, x, y);
+
+                return player;
             }
         }
         return null;
