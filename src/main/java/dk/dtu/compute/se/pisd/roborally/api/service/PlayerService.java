@@ -22,4 +22,6 @@ public interface PlayerService {
     Player changePlayerDirection(Long playerId, String direction);
     Player jumpPlayer(Long playerId, int targetX, int targetY);
 
+
+
 }

@@ -10,6 +10,8 @@ import dk.dtu.compute.se.pisd.roborally.api.service.GameSessionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -17,6 +19,14 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/gamesessions")
 public class GameSessionController {
+
+    private final SimpMessagingTemplate messagingTemplate;
+
+    // Constructor injection of SimpMessagingTemplate
+    @Autowired
+    public GameSessionController(SimpMessagingTemplate messagingTemplate) {
+        this.messagingTemplate = messagingTemplate;
+    }
 
     @Autowired
     private GameSessionService gameSessionService;
@@ -69,6 +79,7 @@ public class GameSessionController {
     public ResponseEntity<GameSessionDTO> joinGameSession(@PathVariable Long gameId, @RequestBody PlayerDTO playerDTO) {
         Player player = playerMapper.playerDTOToPlayer(playerDTO);
         GameSession updatedGameSession = gameSessionService.joinGameSession(gameId, player);
+        gameSessionService.checkAndStartGame(updatedGameSession); // Trigger game start check
         return ResponseEntity.ok(gameSessionMapper.gameSessionToGameSessionDTO(updatedGameSession));
     }
 
@@ -76,6 +87,17 @@ public class GameSessionController {
     public ResponseEntity<GameSessionDTO> joinGameSessionByCode(@PathVariable String joinCode, @RequestBody PlayerDTO playerDTO) {
         Player player = playerMapper.playerDTOToPlayer(playerDTO);
         GameSession updatedGameSession = gameSessionService.joinGameSessionByCode(joinCode, player);
+        checkAndStartGame(updatedGameSession); // Trigger game start check
         return ResponseEntity.ok(gameSessionMapper.gameSessionToGameSessionDTO(updatedGameSession));
+    }
+    private void checkAndStartGame(GameSession gameSession) {
+        if (gameSession.getPlayers().size() == gameSession.getMaxPlayers()) {
+            gameSession.setGameStarted(true);
+            gameSessionService.updateGameSession(gameSession.getId(), gameSession);
+
+            // Notify all clients that the game has started
+            GameSessionDTO gameSessionDTO = gameSessionMapper.gameSessionToGameSessionDTO(gameSession);
+            messagingTemplate.convertAndSend("/topic/gameState", gameSessionDTO);
+        }
     }
 }

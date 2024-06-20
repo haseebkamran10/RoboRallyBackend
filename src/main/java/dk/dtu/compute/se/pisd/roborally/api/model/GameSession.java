@@ -28,4 +28,8 @@ public class GameSession {
 
     @ManyToOne
     private Player host;
+
+    private int maxPlayers;
+
+    private boolean gameStarted;
 }
