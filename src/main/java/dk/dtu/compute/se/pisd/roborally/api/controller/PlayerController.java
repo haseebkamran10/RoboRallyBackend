@@ -74,6 +74,7 @@ public class PlayerController {
 
 
 
+
     @PutMapping("/{id}/change-direction")
     public ResponseEntity<PlayerDTO> changePlayerDirection(@PathVariable Long id, @RequestParam String direction) {
         Player updatedPlayer = playerService.changePlayerDirection(id, direction);
