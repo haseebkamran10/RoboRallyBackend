@@ -123,5 +123,7 @@ public class Space {
     public boolean isFreeOfObstacles() {
         return !isObstacle;
     }
-
+    public ActionField getType() {
+        return type;
+    }
 }
