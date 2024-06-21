@@ -1,13 +1,18 @@
 package dk.dtu.compute.se.pisd.roborally.api.model;
 
+import dk.dtu.compute.se.pisd.roborally.api.controller.GameController;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import java.util.Optional;
 
 @Entity
 @Getter
 @Setter
 public class Space {
+
+
+    public GameController gameController;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -81,7 +86,18 @@ public class Space {
                     // Implement laser effect (e.g., reducing player's energy)
                     break;
                 case "PIT":
-                    // Implement pit effect (e.g., resetting player's position)
+                    gameController = player.getGameController();
+
+                    Optional<Space> respawn = board.getSpacesList()
+                            .stream()
+                            .filter(space -> space.getType() == ActionField.RESPAWN)
+                            .findFirst();
+
+                    if (respawn.isPresent()) {
+                        Space respawnSpace = respawn.get();
+                        gameController.moveTo(player, respawnSpace.x, respawnSpace.y);
+                    }
+
                     break;
                 case "ENERGY_SPACE":
                     player.gainEnergy(10); // Example of gaining energy
@@ -107,4 +123,5 @@ public class Space {
     public boolean isFreeOfObstacles() {
         return !isObstacle;
     }
+
 }

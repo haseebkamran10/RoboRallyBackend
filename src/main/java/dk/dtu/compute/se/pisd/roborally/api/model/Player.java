@@ -1,6 +1,7 @@
 package dk.dtu.compute.se.pisd.roborally.api.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import dk.dtu.compute.se.pisd.roborally.api.controller.GameController;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -10,6 +11,9 @@ import lombok.Setter;
 @Getter
 @Setter
 public class Player {
+
+    private GameController gameController;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -120,6 +124,10 @@ public class Player {
             }
         }
         return false;
-    }
 
+
+    }
+    public GameController getGameController() {
+        return gameController;
+    }
 }

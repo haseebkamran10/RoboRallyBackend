@@ -29,7 +29,10 @@ public class Board {
         spaces.add(space);
         space.setBoard(this);
     }
+    public ArrayList<Space> getSpacesList() {
 
+        return (ArrayList<Space>) spaces;
+    }
     // Utility method to remove a space from the board
     public void removeSpace(Space space) {
         spaces.remove(space);
