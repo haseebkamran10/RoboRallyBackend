@@ -6,6 +6,7 @@ import dk.dtu.compute.se.pisd.roborally.api.model.Player;
 import dk.dtu.compute.se.pisd.roborally.api.service.PlayerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,6 +18,8 @@ public class PlayerController {
 
     @Autowired
     private PlayerService playerService;
+    @Autowired
+    private SimpMessagingTemplate simpMessagingTemplate;
 
     private final PlayerMapper playerMapper = PlayerMapper.INSTANCE;
 
@@ -55,11 +58,22 @@ public class PlayerController {
         return ResponseEntity.noContent().build();
     }
 
-    @PutMapping("/{id}/move")
-    public ResponseEntity<PlayerDTO> movePlayer(@PathVariable Long id, @RequestParam int x, @RequestParam int y) {
-        Player updatedPlayer = playerService.movePlayer(id, x, y);
-        return ResponseEntity.ok(playerMapper.playerToPlayerDTO(updatedPlayer));
+    @PutMapping("/{playerId}/move")
+    public ResponseEntity<PlayerDTO> movePlayer(@PathVariable Long playerId, @RequestParam int x, @RequestParam int y) {
+        System.out.println("Received movePlayer request with playerId: " + playerId + ", x: " + x + ", y: " + y);
+        Player player = playerService.movePlayer(playerId, x, y);
+        PlayerDTO playerDTO = playerMapper.playerToPlayerDTO(player);
+        if (playerDTO != null) {
+            // Broadcasting the move to all connected clients
+            simpMessagingTemplate.convertAndSend("/topic/moves", playerDTO);
+            return ResponseEntity.ok(playerDTO);
+        } else {
+            return ResponseEntity.badRequest().build();
+        }
     }
+
+
+
 
     @PutMapping("/{id}/change-direction")
     public ResponseEntity<PlayerDTO> changePlayerDirection(@PathVariable Long id, @RequestParam String direction) {

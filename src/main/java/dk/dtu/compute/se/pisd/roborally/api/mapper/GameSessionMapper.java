@@ -12,9 +12,13 @@ public interface GameSessionMapper {
 
     @Mapping(source = "board.id", target = "boardId")
     @Mapping(source = "host.id", target = "hostId")
+    @Mapping(source = "maxPlayers", target = "maxPlayers")
+    @Mapping(source = "gameStarted", target = "gameState")
     GameSessionDTO gameSessionToGameSessionDTO(GameSession gameSession);
 
     @Mapping(source = "boardId", target = "board.id")
     @Mapping(source = "hostId", target = "host.id")
+    @Mapping(source = "maxPlayers", target = "maxPlayers")
+    @Mapping(source = "gameState", target = "gameStarted")
     GameSession gameSessionDTOToGameSession(GameSessionDTO gameSessionDTO);
 }
