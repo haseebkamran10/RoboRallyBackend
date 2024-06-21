@@ -14,6 +14,7 @@ import java.util.Optional;
 @Controller
 public class GameController {
 
+
     @Autowired
     private GameSessionRepository gameSessionRepository;
 
@@ -92,4 +93,7 @@ public class GameController {
     public Optional<GameSession> getGameSession(Long gameSessionId) {
         return gameSessionRepository.findById(gameSessionId);
     }
+    public void moveTo (Player player,int x, int y){
+        Space nextSpace = board.getSpace(x, y);
+        player.setSpace(nextSpace);}
 }

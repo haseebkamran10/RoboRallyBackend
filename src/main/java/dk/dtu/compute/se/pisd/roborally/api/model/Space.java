@@ -126,4 +126,5 @@ public class Space {
     public ActionField getType() {
         return type;
     }
+
 }
