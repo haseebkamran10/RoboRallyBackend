@@ -92,4 +92,25 @@ public class GameController {
     public Optional<GameSession> getGameSession(Long gameSessionId) {
         return gameSessionRepository.findById(gameSessionId);
     }
+
+    // Method to reset player to last checkpoint
+    public void resetPlayerToLastCheckpoint(Player player) {
+        Space lastCheckpoint = player.getLastCheckpoint();
+        if (lastCheckpoint != null) {
+            player.setSpace(lastCheckpoint);
+        } else {
+            // Reset to starting position if no checkpoint is found
+            player.setSpace(player.getGameSession().getBoard().getSpace(0, 0));
+        }
+        playerRepository.save(player);
+    }
+
+    // Method to check if the player has reached a checkpoint and update accordingly
+    public void checkAndUpdateCheckpoint(Player player) {
+        Space currentSpace = player.getSpace();
+        if (currentSpace.getActionField() != null && currentSpace.getActionField().getActionType() == ActionField.ActionType.CHECKPOINT) {
+            player.setLastCheckpoint(currentSpace);
+            playerRepository.save(player);
+        }
+    }
 }

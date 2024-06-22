@@ -5,7 +5,6 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-
 @Entity
 @Getter
 @Setter
@@ -20,9 +19,6 @@ public class Player {
     @JsonBackReference
     private GameSession gameSession;
 
-    // Setter for space with additional logic if needed
-    // Setter for space with additional logic if needed
-    @Setter
     @ManyToOne
     private Space space;
 
@@ -30,6 +26,9 @@ public class Player {
     private Heading heading;
 
     private int energy = 100; // Default energy level
+
+    @ManyToOne
+    private Space lastCheckpoint; // New field to track the last checkpoint
 
     // Method to gain energy
     public void gainEnergy(int amount) {
@@ -59,7 +58,6 @@ public class Player {
         System.out.println("Jump conditions not met.");
         return false;
     }
-
 
     // Method to handle sliding on ice tiles
     public boolean slide(Heading direction) {
@@ -122,4 +120,15 @@ public class Player {
         return false;
     }
 
+    // Method to track the last checkpoint
+    public void setLastCheckpoint(Space checkpointSpace) {
+        this.lastCheckpoint = checkpointSpace;
+    }
+
+    // Method to reset to the last checkpoint
+    public void resetToLastCheckpoint() {
+        if (this.lastCheckpoint != null) {
+            this.space = this.lastCheckpoint;
+        }
+    }
 }

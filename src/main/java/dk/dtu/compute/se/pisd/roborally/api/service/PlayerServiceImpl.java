@@ -1,5 +1,6 @@
 package dk.dtu.compute.se.pisd.roborally.api.service;
 
+import dk.dtu.compute.se.pisd.roborally.api.model.ActionField;
 import dk.dtu.compute.se.pisd.roborally.api.model.Heading;
 import dk.dtu.compute.se.pisd.roborally.api.model.Player;
 import dk.dtu.compute.se.pisd.roborally.api.model.Space;
@@ -8,7 +9,6 @@ import dk.dtu.compute.se.pisd.roborally.api.websocket.GameEventHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import dk.dtu.compute.se.pisd.roborally.api.repository.SpaceRepository;
-import java.util.logging.Logger;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,8 +21,10 @@ public class PlayerServiceImpl implements PlayerService {
 
     @Autowired
     private PlayerRepository playerRepository;
+
     @Autowired
     private SpaceRepository spaceRepository;
+
     @Autowired
     private GameEventHandler gameEventHandler;
 
@@ -74,12 +76,14 @@ public class PlayerServiceImpl implements PlayerService {
         player.setSpace(space);
         playerRepository.save(player);
 
+        // Check and update the checkpoint if applicable
+        checkAndUpdateCheckpoint(player);
+
         // Broadcast the move to all connected clients
         gameEventHandler.broadcastPlayerMove(playerId, x, y);
 
         return player;
     }
-
 
     @Override
     public Player changePlayerDirection(Long playerId, String direction) {
@@ -104,5 +108,23 @@ public class PlayerServiceImpl implements PlayerService {
             throw new RuntimeException("Player jump failed");
         }
         return playerRepository.save(player);
+    }
+
+    // Method to check and update the player's checkpoint
+    public void checkAndUpdateCheckpoint(Player player) {
+        Space currentSpace = player.getSpace();
+        if (currentSpace.getActionField() != null && currentSpace.getActionField().getActionType() == ActionField.ActionType.CHECKPOINT) {
+            player.setLastCheckpoint(currentSpace);
+            playerRepository.save(player);
+        }
+    }
+
+    // Method to reset the player to the last checkpoint
+    public void resetPlayerToLastCheckpoint(Player player) {
+        Space lastCheckpoint = player.getLastCheckpoint();
+        if (lastCheckpoint != null) {
+            player.setSpace(lastCheckpoint);
+            playerRepository.save(player);
+        }
     }
 }
