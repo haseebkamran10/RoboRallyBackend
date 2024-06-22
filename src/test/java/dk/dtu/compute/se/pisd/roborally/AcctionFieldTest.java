@@ -10,9 +10,9 @@ class ActionFieldTest {
     void testActionFieldConstructor() {
         ActionField actionField = new ActionField("TestField", ActionField.ActionType.ICE_TILE);
         assertEquals("TestField", actionField.getName());
-        assertTrue(actionField.isIceTile());
-        assertFalse(actionField.isJumpPad());
-        assertFalse(actionField.isObstacle());
+        assertTrue(actionField.getActionType().isIceTile());
+        assertFalse(actionField.getActionType().isJumpPad());
+        assertFalse(actionField.getActionType().isObstacle());
     }
 
     @Test

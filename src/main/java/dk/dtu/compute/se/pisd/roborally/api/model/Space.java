@@ -30,6 +30,16 @@ public class Space {
     private boolean isJumpPad;
     private boolean isObstacle;
 
+    // Method to update advanced movement mechanics based on ActionField
+    @PostLoad
+    private void updateAdvancedMovementMechanics() {
+        if (actionField != null && actionField.getActionType() != null) {
+            this.isIceTile = actionField.getActionType().isIceTile();
+            this.isJumpPad = actionField.getActionType().isJumpPad();
+            this.isObstacle = actionField.getActionType().isObstacle();
+        }
+    }
+
     // Constructor
     public Space(int x, int y, ActionField actionField, Board board) {
         this.x = x;
@@ -41,16 +51,6 @@ public class Space {
 
     // Default constructor for JPA
     public Space() {}
-
-    // Method to update advanced movement mechanics based on ActionField
-    @PostLoad
-    private void updateAdvancedMovementMechanics() {
-        if (actionField != null) {
-            this.isIceTile = actionField.isIceTile();
-            this.isJumpPad = actionField.isJumpPad();
-            this.isObstacle = actionField.isObstacle();
-        }
-    }
 
     // Method to activate space effects
     public void activate(Player player) {
@@ -86,9 +86,6 @@ public class Space {
                     break;
                 case ENERGY_SPACE:
                     player.gainEnergy(10); // Example of gaining energy
-                    break;
-                case CHECKPOINT:
-                    player.setLastCheckpoint(this);
                     break;
                 default:
                     // No special action

@@ -12,53 +12,65 @@ public class ActionField {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Enum representing the type of action field
     @Enumerated(EnumType.STRING)
     private ActionType actionType;
-
-    private boolean isIceTile;
-    private boolean isJumpPad;
-    private boolean isObstacle;
 
     private String name;
 
     public enum ActionType {
-        CONVEYOR_BELT,
-        RIGHT_CONVEYOR_BELT,
-        LEFT_CONVEYOR_BELT,
-        DOUBLE_CONVEYOR_BELT,
-        DOUBLE_RIGHT_CONVEYOR_BELT,
-        DOUBLE_LEFT_CONVEYOR_BELT,
-        DOUBLE_LEFTTREE_CONVEYOR_BELT,
-        DOUBLE_RIGHTTREE_CONVEYOR_BELT,
-        LEFT_GEAR,
-        RIGHT_GEAR,
-        BOARD_LASER_START,
-        BOARD_LASER,
-        BOARD_LASER_END,
-        PIT,
-        PUSH_PANEL,
-        STARTING_GEAR,
-        ENERGY_SPACE,
-        CHECKPOINT,
-        WALL,
-        PRIORITY_ANTENNA,
-        RESPAWN,
-        NORMAL,
-        ICE_TILE, // New type for ice tiles
-        JUMP_PAD, // New type for jump pads
-        OBSTACLE  // New type for obstacles
+        CONVEYOR_BELT(false, false, false),
+        RIGHT_CONVEYOR_BELT(false, false, false),
+        LEFT_CONVEYOR_BELT(false, false, false),
+        DOUBLE_CONVEYOR_BELT(false, false, false),
+        DOUBLE_RIGHT_CONVEYOR_BELT(false, false, false),
+        DOUBLE_LEFT_CONVEYOR_BELT(false, false, false),
+        DOUBLE_LEFTTREE_CONVEYOR_BELT(false, false, false),
+        DOUBLE_RIGHTTREE_CONVEYOR_BELT(false, false, false),
+        LEFT_GEAR(false, false, false),
+        RIGHT_GEAR(false, false, false),
+        BOARD_LASER_START(false, false, false),
+        BOARD_LASER(false, false, false),
+        BOARD_LASER_END(false, false, false),
+        PIT(false, false, false),
+        PUSH_PANEL(false, false, false),
+        STARTING_GEAR(false, false, false),
+        ENERGY_SPACE(false, false, false),
+        CHECKPOINT(false, false, false),
+        WALL(false, false, false),
+        PRIORITY_ANTENNA(false, false, false),
+        RESPAWN(false, false, false),
+        NORMAL(false, false, false),
+        ICE_TILE(true, false, false),
+        JUMP_PAD(false, true, false),
+        OBSTACLE(false, false, true);
+
+        private final boolean isIceTile;
+        private final boolean isJumpPad;
+        private final boolean isObstacle;
+
+        ActionType(boolean isIceTile, boolean isJumpPad, boolean isObstacle) {
+            this.isIceTile = isIceTile;
+            this.isJumpPad = isJumpPad;
+            this.isObstacle = isObstacle;
+        }
+
+        public boolean isIceTile() {
+            return isIceTile;
+        }
+
+        public boolean isJumpPad() {
+            return isJumpPad;
+        }
+
+        public boolean isObstacle() {
+            return isObstacle;
+        }
     }
 
-    // Constructor to initialize the action field with a specific type
     public ActionField(String name, ActionType actionType) {
         this.name = name;
         this.actionType = actionType;
-        this.isIceTile = actionType == ActionType.ICE_TILE;
-        this.isJumpPad = actionType == ActionType.JUMP_PAD;
-        this.isObstacle = actionType == ActionType.OBSTACLE;
     }
 
-    // Default constructor for JPA
     public ActionField() {}
 }
