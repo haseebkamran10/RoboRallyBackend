@@ -1,13 +1,14 @@
 package dk.dtu.compute.se.pisd.roborally.api.service;
 
-import dk.dtu.compute.se.pisd.roborally.api.model.Heading;
-import dk.dtu.compute.se.pisd.roborally.api.model.Player;
-import dk.dtu.compute.se.pisd.roborally.api.model.Space;
+import dk.dtu.compute.se.pisd.roborally.api.dto.PlayerMoveDTO;
+import dk.dtu.compute.se.pisd.roborally.api.model.*;
 import dk.dtu.compute.se.pisd.roborally.api.repository.PlayerRepository;
 import dk.dtu.compute.se.pisd.roborally.api.websocket.GameEventHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import dk.dtu.compute.se.pisd.roborally.api.repository.SpaceRepository;
+import org.springframework.web.client.RestTemplate;
+
 import java.util.logging.Logger;
 
 import java.util.List;
@@ -25,6 +26,10 @@ public class PlayerServiceImpl implements PlayerService {
     private SpaceRepository spaceRepository;
     @Autowired
     private GameEventHandler gameEventHandler;
+
+    @Autowired
+    private RestTemplate restTemplate;
+
 
     @Override
     public List<Player> getAllPlayers() {
@@ -66,10 +71,20 @@ public class PlayerServiceImpl implements PlayerService {
             System.out.println("ERROR: Player not found with ID: " + playerId);
             throw new RuntimeException("Player not found with ID: " + playerId);
         }
-        Space space = spaceRepository.findByXAndY(x, y);
+        GameSession gameSession = player.getGameSession();
+        if (gameSession == null) {
+            System.out.println("ERROR: Game session not found for player with ID: " + playerId);
+            throw new RuntimeException("Game session not found for player with ID: " + playerId);
+        }
+        Board board = gameSession.getBoard();
+        if (board == null) {
+            System.out.println("ERROR: Board not found for game session with ID: " + gameSession.getId());
+            throw new RuntimeException("Board not found for game session with ID: " + gameSession.getId());
+        }
+        Space space = spaceRepository.findByXAndYAndBoard(x, y, board);
         if (space == null) {
-            System.out.println("ERROR: Space not found at coordinates (" + x + ", " + y + ")");
-            throw new RuntimeException("Space not found at coordinates (" + x + ", " + y + ")");
+            System.out.println("ERROR: Space not found at coordinates (" + x + ", " + y + ") for board with ID: " + board.getId());
+            throw new RuntimeException("Space not found at coordinates (" + x + ", " + y + ") for board with ID: " + board.getId());
         }
         player.setSpace(space);
         playerRepository.save(player);
@@ -96,13 +111,25 @@ public class PlayerServiceImpl implements PlayerService {
     @Override
     public Player jumpPlayer(Long playerId, int targetX, int targetY) {
         Player player = getPlayerById(playerId);
-        Space targetSpace = spaceRepository.findByXAndY(targetX, targetY);
+        if (player == null) {
+            throw new RuntimeException("Player not found with ID: " + playerId);
+        }
+        GameSession gameSession = player.getGameSession();
+        if (gameSession == null) {
+            throw new RuntimeException("Game session not found for player with ID: " + playerId);
+        }
+        Board board = gameSession.getBoard();
+        if (board == null) {
+            throw new RuntimeException("Board not found for game session with ID: " + gameSession.getId());
+        }
+        Space targetSpace = spaceRepository.findByXAndYAndBoard(targetX, targetY, board);
         if (targetSpace == null) {
-            throw new RuntimeException("Space not found at coordinates (" + targetX + ", " + targetY + ")");
+            throw new RuntimeException("Space not found at coordinates (" + targetX + ", " + targetY + ") for board with ID: " + board.getId());
         }
         if (!player.jump(targetSpace)) {
             throw new RuntimeException("Player jump failed");
         }
         return playerRepository.save(player);
     }
+
 }

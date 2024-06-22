@@ -15,6 +15,9 @@ public class Player {
     private Long id;
     private String name;
     private String avatar;
+    private String endpointUrl;
+    private int x; // Add this field
+    private int y; // Add this field
 
     @ManyToOne
     @JsonBackReference
