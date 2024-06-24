@@ -15,4 +15,6 @@ public interface GameSessionService {
     GameSession joinGameSession(Long gameId, Player player);
 
     GameSession joinGameSessionByCode(String joinCode, Player player);
+    void checkAndStartGame(GameSession gameSession); // New method to check and start the game
+
 }

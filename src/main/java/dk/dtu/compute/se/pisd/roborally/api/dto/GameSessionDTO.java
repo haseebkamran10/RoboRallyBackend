@@ -14,4 +14,7 @@ public class GameSessionDTO {
     private int numberOfPlayers;
     private String joinCode;
     private Long hostId;
+    private int maxPlayers;
+    private String gameState; // Added to track the state of the game
+
 }

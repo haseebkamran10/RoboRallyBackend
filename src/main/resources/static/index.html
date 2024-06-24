@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>RoboRally</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css">
+    <style>
+        #board {
+            display: grid;
+            grid-template-columns: repeat(10, 50px);
+            grid-template-rows: repeat(10, 50px);
+            gap: 1px;
+        }
+        .cell {
+            width: 50px;
+            height: 50px;
+            border: 1px solid #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .player {
+            background-color: yellow;
+        }
+        #moveControls {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>RoboRally</h1>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#playerModal">Create Player</button>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#boardModal">Create Board</button>
+    <button class="btn btn-primary" onclick="showGameOptions()">Host or Join Game</button>
+    <div id="board" class="mt-3"></div>
+    <div id="moveControls" class="mt-3">
+        <input type="number" id="x" placeholder="X" class="form-control mb-2">
+        <input type="number" id="y" placeholder="Y" class="form-control mb-2">
+        <button class="btn btn-primary" onclick="makeMove()">Move</button>
+    </div>
+</div>
+
+<!-- Player Modal -->
+<div class="modal fade" id="playerModal" tabindex="-1" aria-labelledby="playerModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="playerModalLabel">Create Player</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="playerName" class="form-label">Player Name</label>
+                    <input type="text" class="form-control" id="playerName">
+                </div>
+                <div class="mb-3">
+                    <label for="playerAvatar" class="form-label">Player Avatar</label>
+                    <input type="text" class="form-control" id="playerAvatar">
+                </div>
+                <div class="mb-3" id="playerDetails" style="display: none;">
+                    <label class="form-label">Player Details</label>
+                    <p id="playerIdDisplay"></p>
+                    <p id="playerNameDisplay"></p>
+                    <p id="playerAvatarDisplay"></p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="createPlayer()">Create Player</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Board Modal -->
+<div class="modal fade" id="boardModal" tabindex="-1" aria-labelledby="boardModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="boardModalLabel">Create Board</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="boardName" class="form-label">Board Name</label>
+                    <input type="text" class="form-control" id="boardName">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="createBoard()">Create Board</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Game Options Modal -->
+<div class="modal fade" id="gameOptionsModal" tabindex="-1" aria-labelledby="gameOptionsModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="gameOptionsModalLabel">Host or Join Game</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <button class="btn btn-primary w-100 mb-3" onclick="showHostGameModal()">Host Game</button>
+                <button class="btn btn-primary w-100" onclick="showJoinGameModal()">Join Game</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Host Game Modal -->
+<div class="modal fade" id="hostGameModal" tabindex="-1" aria-labelledby="hostGameModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="hostGameModalLabel">Host Game</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="boardId" class="form-label">Board ID</label>
+                    <input type="number" class="form-control" id="boardId">
+                </div>
+                <div class="mb-3">
+                    <label for="hostPlayerId" class="form-label">Your Player ID</label>
+                    <input type="number" class="form-control" id="hostPlayerId">
+                </div>
+                <div class="mb-3">
+                    <label for="maxPlayers" class="form-label">Max Players</label>
+                    <input type="number" class="form-control" id="maxPlayers" min="2" max="6">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="hostGame()">Host Game</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Join Game Modal -->
+<div class="modal fade" id="joinGameModal" tabindex="-1" aria-labelledby="joinGameModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="joinGameModalLabel">Join Game</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="joinCode" class="form-label">Join Code</label>
+                    <input type="text" class="form-control" id="joinCode">
+                </div>
+                <div class="mb-3">
+                    <label for="joinPlayerId" class="form-label">Your Player ID</label>
+                    <input type="number" class="form-control" id="joinPlayerId">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="joinGame()">Join Game</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var playerId = null;
+    var gameId = null;
+    var gameState = null;
+    var pollInterval = null;
+
+    function connect() {
+        console.log('Connected');
+    }
+
+    function sendMove() {
+        var message = {
+            playerId: playerId,
+            x: document.getElementById('x').value,
+            y: document.getElementById('y').value
+        };
+        $.ajax({
+            url: '/api/players/' + playerId + '/move',
+            type: 'PUT',
+            data: { x: message.x, y: message.y },
+            success: function (data) {
+                console.log('Player moved:', data);
+                pollGameState();
+            },
+            error: function (error) {
+                console.error('Error moving player:', error);
+            }
+        });
+    }
+
+    function showMove(message) {
+        var cell = document.getElementById('cell-' + message.x + '-' + message.y);
+        if (cell) {
+            var playerElement = document.createElement('div');
+            playerElement.classList.add('player');
+            playerElement.innerText = 'P' + message.playerId;
+            cell.appendChild(playerElement);
+        }
+    }
+
+    function initBoard() {
+        var boardElement = document.getElementById('board');
+        for (var i = 0; i < 10; i++) {
+            for (var j = 0; j < 10; j++) {
+                var cell = document.createElement('div');
+                cell.id = 'cell-' + i + '-' + j;
+                cell.classList.add('cell');
+                boardElement.appendChild(cell);
+            }
+        }
+    }
+
+    function createPlayer() {
+        var playerName = document.getElementById('playerName').value;
+        var playerAvatar = document.getElementById('playerAvatar').value;
+
+        $.ajax({
+            url: '/api/players/create-new-player',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ name: playerName, avatar: playerAvatar }),
+            success: function (data) {
+                console.log('Player created:', data);
+                $('#playerModal').modal('hide');
+
+                playerId = data.id;
+                document.getElementById('playerDetails').style.display = 'block';
+                document.getElementById('playerIdDisplay').innerText = 'ID: ' + data.id;
+                document.getElementById('playerNameDisplay').innerText = 'Name: ' + data.name;
+                document.getElementById('playerAvatarDisplay').innerText = 'Avatar: ' + data.avatar;
+            },
+            error: function (error) {
+                console.error('Error creating player:', error);
+            }
+        });
+    }
+
+    function createBoard() {
+        var boardName = document.getElementById('boardName').value;
+
+        $.ajax({
+            url: '/api/boards/create-new-board',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ name: boardName }),
+            success: function (data) {
+                console.log('Board created:', data);
+                $('#boardModal').modal('hide');
+            },
+            error: function (error) {
+                console.error('Error creating board:', error);
+            }
+        });
+    }
+
+    function showGameOptions() {
+        $('#gameOptionsModal').modal('show');
+    }
+
+    function showHostGameModal() {
+        $('#gameOptionsModal').modal('hide');
+        $('#hostGameModal').modal('show');
+    }
+
+    function showJoinGameModal() {
+        $('#gameOptionsModal').modal('hide');
+        $('#joinGameModal').modal('show');
+    }
+
+    function hostGame() {
+        var boardId = document.getElementById('boardId').value;
+        var hostPlayerId = document.getElementById('hostPlayerId').value;
+        var maxPlayers = document.getElementById('maxPlayers').value;
+
+        if (maxPlayers < 2 || maxPlayers > 6) {
+            alert('The number of players must be between 2 and 6.');
+            return;
+        }
+
+        var gameSessionData = {
+            boardId: boardId,
+            players: [{ id: hostPlayerId }],
+            maxPlayers: maxPlayers
+        };
+
+        console.log('Creating game session with data:', gameSessionData);
+
+        $.ajax({
+            url: '/api/gamesessions/create-new-session',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(gameSessionData),
+            success: function (data) {
+                console.log('Game session created:', data);
+                alert('Game session created with join code: ' + data.joinCode);
+                gameId = data.id;
+                gameState = data.gameState;
+                $('#hostGameModal').modal('hide');
+                pollGameState();
+            },
+            error: function (error) {
+                console.error('Error creating game session:', error);
+            }
+        });
+    }
+
+    function joinGame() {
+        var joinCode = document.getElementById('joinCode').value;
+        var joinPlayerId = document.getElementById('joinPlayerId').value;
+
+        $.ajax({
+            url: '/api/gamesessions/join/' + joinCode,
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ id: joinPlayerId }),
+            success: function (data) {
+                console.log('Joined game session:', data);
+                alert('Joined game session with ID: ' + data.id);
+                gameId = data.id;
+                gameState = data.gameState;
+                playerId = joinPlayerId;  // Set the playerId here
+                $('#joinGameModal').modal('hide');
+                pollGameState();
+            },
+            error: function (error) {
+                console.error('Error joining game session:', error);
+            }
+        });
+    }
+
+  function pollGameState() {
+    if (pollInterval) {
+        clearInterval(pollInterval);
+    }
+
+    pollInterval = setInterval(function () {
+        $.ajax({
+            url: '/api/gamesessions/' + gameId + '/state',
+            type: 'GET',
+            success: function (data) {
+                console.log('Full game state received:', data); // Log the full game state
+                updateGameState(data);
+            },
+            error: function (error) {
+                console.error('Error fetching game state:', error);
+            }
+        });
+    }, 1000); // Poll every 1 second
+}
+
+function updateGameState(data) {
+    console.log('Game state:', data);
+    gameState = data.gameStarted;
+    console.log('Game state updated:', gameState);
+    if (gameState === true) {
+        enableMoveControls();
+    }
+    updateBoard(data.players);
+}
+
+
+    function enableMoveControls() {
+        document.getElementById('moveControls').style.display = 'block';
+    }
+
+    function makeMove() {
+        if (playerId === null) {
+            alert('Player ID is not set. Please create or join a game first.');
+            return;
+        }
+
+        var x = document.getElementById('x').value;
+        var y = document.getElementById('y').value;
+
+        $.ajax({
+            url: '/api/players/' + playerId + '/move',
+            type: 'PUT',
+            data: { x: x, y: y },
+            success: function (data) {
+                console.log('Player moved:', data);
+                pollGameState();
+            },
+            error: function (error) {
+                console.error('Error moving player:', error);
+            }
+        });
+    }
+
+  function updateBoard(players) {
+    console.log('Clearing board for update');
+    // Clear the board
+    $('.cell').empty();
+
+    // Update the board with new player positions
+    players.forEach(player => {
+        console.log('Updating board for player:', player);
+        if (player.x !== undefined && player.y !== undefined) {
+            // Subtract 1 from coordinates to fix the off-by-one error
+            var cell = document.getElementById('cell-' + (player.x - 1) + '-' + (player.y - 1));
+            if (cell) {
+                var playerElement = document.createElement('div');
+                playerElement.classList.add('player');
+                playerElement.innerText = 'P' + player.id;
+                cell.appendChild(playerElement);
+            }
+        } else {
+            console.warn('Player coordinates are undefined:', player);
+        }
+    });
+}
+
+
+
+    window.onload = function () {
+        connect();
+        initBoard();
+    };
+
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
