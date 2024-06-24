@@ -82,9 +82,15 @@ public class GameController {
         GameStateDTO gameStateDTO = new GameStateDTO();
         gameStateDTO.setGameStarted(gameSession.isGameStarted());
         gameStateDTO.setPlayers(gameSession.getPlayers().stream()
-                .map(playerMapper::playerToPlayerDTO)
+                .map(player -> {
+                    PlayerDTO playerDTO = playerMapper.playerToPlayerDTO(player);
+                    playerDTO.setX(player.getX()); // Set x coordinate
+                    playerDTO.setY(player.getY()); // Set y coordinate
+                    return playerDTO;
+                })
                 .collect(Collectors.toList()));
 
         return ResponseEntity.ok(gameStateDTO);
     }
+
 }

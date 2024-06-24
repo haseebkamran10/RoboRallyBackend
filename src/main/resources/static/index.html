@@ -338,36 +338,35 @@
         });
     }
 
-  function pollGameState() {
-    if (pollInterval) {
-        clearInterval(pollInterval);
+    function pollGameState() {
+        if (pollInterval) {
+            clearInterval(pollInterval);
+        }
+
+        pollInterval = setInterval(function () {
+            $.ajax({
+                url: '/api/gamesessions/' + gameId + '/state',
+                type: 'GET',
+                success: function (data) {
+                    console.log('Full game state received:', data); // Log the full game state
+                    updateGameState(data);
+                },
+                error: function (error) {
+                    console.error('Error fetching game state:', error);
+                }
+            });
+        }, 1000); // Poll every 1 second
     }
 
-    pollInterval = setInterval(function () {
-        $.ajax({
-            url: '/api/gamesessions/' + gameId + '/state',
-            type: 'GET',
-            success: function (data) {
-                console.log('Full game state received:', data); // Log the full game state
-                updateGameState(data);
-            },
-            error: function (error) {
-                console.error('Error fetching game state:', error);
-            }
-        });
-    }, 1000); // Poll every 1 second
-}
-
-function updateGameState(data) {
-    console.log('Game state:', data);
-    gameState = data.gameStarted;
-    console.log('Game state updated:', gameState);
-    if (gameState === true) {
-        enableMoveControls();
+    function updateGameState(data) {
+        console.log('Game state:', data);
+        gameState = data.gameStarted;
+        console.log('Game state updated:', gameState);
+        if (gameState === true) {
+            enableMoveControls();
+        }
+        updateBoard(data.players);
     }
-    updateBoard(data.players);
-}
-
 
     function enableMoveControls() {
         document.getElementById('moveControls').style.display = 'block';
@@ -396,29 +395,27 @@ function updateGameState(data) {
         });
     }
 
-  function updateBoard(players) {
-    console.log('Clearing board for update');
-    // Clear the board
-    $('.cell').empty();
+    function updateBoard(players) {
+        console.log('Clearing board for update');
+        // Clear the board
+        $('.cell').empty();
 
-    // Update the board with new player positions
-    players.forEach(player => {
-        console.log('Updating board for player:', player);
-        if (player.x !== undefined && player.y !== undefined) {
-            var cell = document.getElementById('cell-' + player.x + '-' + player.y);
-            if (cell) {
-                var playerElement = document.createElement('div');
-                playerElement.classList.add('player');
-                playerElement.innerText = 'P' + player.id;
-                cell.appendChild(playerElement);
+        // Update the board with new player positions
+        players.forEach(player => {
+            console.log('Updating board for player:', player);
+            if (player.x !== undefined && player.y !== undefined) {
+                var cell = document.getElementById('cell-' + player.x + '-' + player.y);
+                if (cell) {
+                    var playerElement = document.createElement('div');
+                    playerElement.classList.add('player');
+                    playerElement.innerText = 'P' + player.id;
+                    cell.appendChild(playerElement);
+                }
+            } else {
+                console.warn('Player coordinates are undefined:', player);
             }
-        } else {
-            console.warn('Player coordinates are undefined:', player);
-        }
-    });
-}
-
-
+        });
+    }
 
     window.onload = function () {
         connect();
