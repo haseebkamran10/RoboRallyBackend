@@ -9,8 +9,6 @@ import org.springframework.stereotype.Service;
 import dk.dtu.compute.se.pisd.roborally.api.repository.SpaceRepository;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.logging.Logger;
-
 import java.util.List;
 import java.util.Optional;
 
@@ -30,7 +28,6 @@ public class PlayerServiceImpl implements PlayerService {
     @Autowired
     private RestTemplate restTemplate;
 
-
     @Override
     public List<Player> getAllPlayers() {
         return playerRepository.findAll();
@@ -44,6 +41,9 @@ public class PlayerServiceImpl implements PlayerService {
 
     @Override
     public Player createPlayer(Player player) {
+        // Initialize x and y coordinates to default values (e.g., 0)
+        player.setX(0);
+        player.setY(0);
         return playerRepository.save(player);
     }
 
@@ -53,6 +53,8 @@ public class PlayerServiceImpl implements PlayerService {
         if (player != null) {
             player.setName(playerDetails.getName());
             player.setAvatar(playerDetails.getAvatar());
+            player.setX(playerDetails.getX());
+            player.setY(playerDetails.getY());
             return playerRepository.save(player);
         }
         return null;
@@ -86,7 +88,9 @@ public class PlayerServiceImpl implements PlayerService {
             System.out.println("ERROR: Space not found at coordinates (" + x + ", " + y + ") for board with ID: " + board.getId());
             throw new RuntimeException("Space not found at coordinates (" + x + ", " + y + ") for board with ID: " + board.getId());
         }
-        player.setSpace(space);
+
+        player.setX(x);
+        player.setY(y);
         playerRepository.save(player);
 
         // Broadcast the move to all connected clients
@@ -94,7 +98,6 @@ public class PlayerServiceImpl implements PlayerService {
 
         return player;
     }
-
 
     @Override
     public Player changePlayerDirection(Long playerId, String direction) {
@@ -131,5 +134,4 @@ public class PlayerServiceImpl implements PlayerService {
         }
         return playerRepository.save(player);
     }
-
 }

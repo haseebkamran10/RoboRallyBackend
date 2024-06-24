@@ -16,8 +16,8 @@ public class Player {
     private String name;
     private String avatar;
     private String endpointUrl;
-    private int x; // Add this field
-    private int y; // Add this field
+    private int x;
+    private int y;
 
     @ManyToOne
     @JsonBackReference
@@ -33,6 +33,8 @@ public class Player {
     private Heading heading;
 
     private int energy = 100; // Default energy level
+
+
 
     // Method to gain energy
     public void gainEnergy(int amount) {
