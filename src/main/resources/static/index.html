@@ -3,8 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <title>RoboRally</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.0/sockjs.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css">
     <style>
@@ -36,7 +34,6 @@
     <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#playerModal">Create Player</button>
     <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#boardModal">Create Board</button>
     <button class="btn btn-primary" onclick="showGameOptions()">Host or Join Game</button>
-    <div id="response"></div>
     <div id="board" class="mt-3"></div>
     <div id="moveControls" class="mt-3">
         <input type="number" id="x" placeholder="X" class="form-control mb-2">
@@ -172,24 +169,13 @@
 </div>
 
 <script>
-    var stompClient = null;
     var playerId = null;
     var gameId = null;
     var gameState = null;
+    var pollInterval = null;
 
     function connect() {
-        var socket = new SockJS('/ws');
-        stompClient = Stomp.over(socket);
-        stompClient.connect({}, function (frame) {
-            console.log('Connected: ' + frame);
-            stompClient.subscribe('/topic/moves', function (message) {
-                showMove(JSON.parse(message.body));
-            });
-            stompClient.subscribe('/topic/gameState', function (message) {
-                console.log('Received game state update:', message.body);
-                updateGameState(JSON.parse(message.body));
-            });
-        });
+        console.log('Connected');
     }
 
     function sendMove() {
@@ -198,7 +184,18 @@
             x: document.getElementById('x').value,
             y: document.getElementById('y').value
         };
-        stompClient.send("/app/move", {}, JSON.stringify(message));
+        $.ajax({
+            url: '/api/players/' + playerId + '/move',
+            type: 'PUT',
+            data: { x: message.x, y: message.y },
+            success: function (data) {
+                console.log('Player moved:', data);
+                pollGameState();
+            },
+            error: function (error) {
+                console.error('Error moving player:', error);
+            }
+        });
     }
 
     function showMove(message) {
@@ -209,14 +206,6 @@
             playerElement.innerText = 'P' + message.playerId;
             cell.appendChild(playerElement);
         }
-        updateLog(message);
-    }
-
-    function updateLog(message) {
-        var response = document.getElementById('response');
-        var p = document.createElement('p');
-        p.appendChild(document.createTextNode('Player ' + message.playerId + ' moved to (' + message.x + ', ' + message.y + ')'));
-        response.appendChild(p);
     }
 
     function initBoard() {
@@ -242,7 +231,6 @@
             data: JSON.stringify({ name: playerName, avatar: playerAvatar }),
             success: function (data) {
                 console.log('Player created:', data);
-                alert('Player created with ID: ' + data.id);
                 $('#playerModal').modal('hide');
 
                 playerId = data.id;
@@ -267,7 +255,6 @@
             data: JSON.stringify({ name: boardName }),
             success: function (data) {
                 console.log('Board created:', data);
-                alert('Board created with ID: ' + data.id);
                 $('#boardModal').modal('hide');
             },
             error: function (error) {
@@ -319,7 +306,7 @@
                 gameId = data.id;
                 gameState = data.gameState;
                 $('#hostGameModal').modal('hide');
-                checkGameState();
+                pollGameState();
             },
             error: function (error) {
                 console.error('Error creating game session:', error);
@@ -343,7 +330,7 @@
                 gameState = data.gameState;
                 playerId = joinPlayerId;  // Set the playerId here
                 $('#joinGameModal').modal('hide');
-                checkGameState();
+                pollGameState();
             },
             error: function (error) {
                 console.error('Error joining game session:', error);
@@ -351,16 +338,39 @@
         });
     }
 
-    function checkGameState() {
-        console.log('Checking game state:', gameState);
-        if (gameState === 'true' || gameState === true) {
-            enableMoveControls();
-        }
+  function pollGameState() {
+    if (pollInterval) {
+        clearInterval(pollInterval);
     }
+
+    pollInterval = setInterval(function () {
+        $.ajax({
+            url: '/api/gamesessions/' + gameId + '/state',
+            type: 'GET',
+            success: function (data) {
+                console.log('Full game state received:', data); // Log the full game state
+                updateGameState(data);
+            },
+            error: function (error) {
+                console.error('Error fetching game state:', error);
+            }
+        });
+    }, 1000); // Poll every 1 second
+}
+
+function updateGameState(data) {
+    console.log('Game state:', data);
+    gameState = data.gameStarted;
+    console.log('Game state updated:', gameState);
+    if (gameState === true) {
+        enableMoveControls();
+    }
+    updateBoard(data.players);
+}
+
 
     function enableMoveControls() {
         document.getElementById('moveControls').style.display = 'block';
-        alert('Game started! You can now make your moves.');
     }
 
     function makeMove() {
@@ -375,11 +385,10 @@
         $.ajax({
             url: '/api/players/' + playerId + '/move',
             type: 'PUT',
-            contentType: 'application/json',
-            data: JSON.stringify({ x: x, y: y }),
+            data: { x: x, y: y },
             success: function (data) {
                 console.log('Player moved:', data);
-                sendMove();
+                pollGameState();
             },
             error: function (error) {
                 console.error('Error moving player:', error);
@@ -387,18 +396,36 @@
         });
     }
 
-    function updateGameState(message) {
-        gameState = message.gameStarted;
-        console.log('Game state updated:', gameState);
-        if (gameState === 'true' || gameState === true) {
-            enableMoveControls();
+  function updateBoard(players) {
+    console.log('Clearing board for update');
+    // Clear the board
+    $('.cell').empty();
+
+    // Update the board with new player positions
+    players.forEach(player => {
+        console.log('Updating board for player:', player);
+        if (player.x !== undefined && player.y !== undefined) {
+            // Subtract 1 from coordinates to fix the off-by-one error
+            var cell = document.getElementById('cell-' + (player.x - 1) + '-' + (player.y - 1));
+            if (cell) {
+                var playerElement = document.createElement('div');
+                playerElement.classList.add('player');
+                playerElement.innerText = 'P' + player.id;
+                cell.appendChild(playerElement);
+            }
+        } else {
+            console.warn('Player coordinates are undefined:', player);
         }
-    }
+    });
+}
+
+
 
     window.onload = function () {
         connect();
         initBoard();
     };
+
 </script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>

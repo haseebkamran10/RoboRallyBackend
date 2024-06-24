@@ -8,6 +8,7 @@ import dk.dtu.compute.se.pisd.roborally.api.model.GameSession;
 import dk.dtu.compute.se.pisd.roborally.api.model.Player;
 import dk.dtu.compute.se.pisd.roborally.api.service.GameSessionService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -49,17 +50,22 @@ public class GameSessionController {
 
     @PostMapping("/create-new-session")
     public ResponseEntity<GameSessionDTO> createGameSession(@RequestBody GameSessionDTO gameSessionDTO) {
-        GameSession gameSession = gameSessionMapper.gameSessionDTOToGameSession(gameSessionDTO);
-        if (gameSession.getBoard() == null || gameSession.getBoard().getId() == null) {
-            return ResponseEntity.badRequest().body(null);
-        }
+        try {
+            GameSession gameSession = gameSessionMapper.gameSessionDTOToGameSession(gameSessionDTO);
+            if (gameSession.getBoard() == null || gameSession.getBoard().getId() == null) {
+                return ResponseEntity.badRequest().body(null);
+            }
 
-        if (gameSession.getPlayers() == null || gameSession.getPlayers().size() != 1) {
-            return ResponseEntity.badRequest().body(null);
-        }
+            if (gameSession.getPlayers() == null || gameSession.getPlayers().size() != 1) {
+                return ResponseEntity.badRequest().body(null);
+            }
 
-        GameSession savedGameSession = gameSessionService.createGameSession(gameSession);
-        return ResponseEntity.ok(gameSessionMapper.gameSessionToGameSessionDTO(savedGameSession));
+            GameSession savedGameSession = gameSessionService.createGameSession(gameSession);
+            return ResponseEntity.ok(gameSessionMapper.gameSessionToGameSessionDTO(savedGameSession));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
     }
 
     @PutMapping("/{id}")

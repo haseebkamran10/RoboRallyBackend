@@ -3,9 +3,11 @@ package dk.dtu.compute.se.pisd.roborally.api.service;
 import dk.dtu.compute.se.pisd.roborally.api.model.Board;
 import dk.dtu.compute.se.pisd.roborally.api.model.GameSession;
 import dk.dtu.compute.se.pisd.roborally.api.model.Player;
+import dk.dtu.compute.se.pisd.roborally.api.model.Space;
 import dk.dtu.compute.se.pisd.roborally.api.repository.BoardRepository;
 import dk.dtu.compute.se.pisd.roborally.api.repository.GameSessionRepository;
 import dk.dtu.compute.se.pisd.roborally.api.repository.PlayerRepository;
+import dk.dtu.compute.se.pisd.roborally.api.repository.SpaceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +26,9 @@ public class GameSessionServiceImpl implements GameSessionService {
 
     @Autowired
     private PlayerRepository playerRepository;
+
+    @Autowired
+    private SpaceRepository spaceRepository;
 
     @Override
     public List<GameSession> getAllGameSessions() {
@@ -58,6 +63,9 @@ public class GameSessionServiceImpl implements GameSessionService {
 
         gameSession.setBoard(board);
 
+        // Initialize spaces for the board
+        initializeSpacesForBoard(board);
+
         // Ensure players are attached to the current session
         List<Player> attachedPlayers = new ArrayList<>();
         for (Player player : gameSession.getPlayers()) {
@@ -82,7 +90,6 @@ public class GameSessionServiceImpl implements GameSessionService {
         System.out.println("Saving game session: " + gameSession);
         return gameSessionRepository.save(gameSession);
     }
-
     @Override
     public GameSession updateGameSession(Long id, GameSession gameSessionDetails) {
         GameSession gameSession = getGameSessionById(id);
@@ -161,6 +168,20 @@ public class GameSessionServiceImpl implements GameSessionService {
             gameSession.setGameStarted(true); // Set the gameStarted field to true
             gameSessionRepository.save(gameSession); // Save the updated game session
             // You can add more game starting logic here
+        }
+    }
+
+    private void initializeSpacesForBoard(Board board) {
+        System.out.println("Initializing spaces for the board: " + board.getId());
+        for (int x = 0; x < 5; x++) {
+            for (int y = 0; y < 5; y++) {
+                Space space = new Space();
+                space.setX(x);
+                space.setY(y);
+                space.setBoard(board);
+                spaceRepository.save(space);
+                System.out.println("Saved space at (" + x + ", " + y + ")");
+            }
         }
     }
 }
