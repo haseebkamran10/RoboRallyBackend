@@ -30,6 +30,11 @@ public class Space {
     private boolean isJumpPad;
     private boolean isObstacle;
 
+    // Fields for heading and index
+    @Enumerated(EnumType.STRING)
+    private Heading heading;
+    private int index;
+
     // Method to update advanced movement mechanics based on ActionField
     @PostLoad
     private void updateAdvancedMovementMechanics() {
@@ -104,6 +109,7 @@ public class Space {
     public boolean isObstacle() {
         return isObstacle;
     }
+
     public boolean isFreeOfObstacles() {
         return !isObstacle;
     }

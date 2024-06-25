@@ -35,7 +35,15 @@ public class BoardController {
 
     @PostMapping("/create-new-board")
     public ResponseEntity<BoardDTO> createBoard(@RequestBody BoardDTO boardDTO) {
+        if (boardDTO.getWidth() == 0) {
+            boardDTO.setWidth(13);
+        }
+        if (boardDTO.getHeight() == 0) {
+            boardDTO.setHeight(10);
+        }
+
         Board board = boardMapper.boardDTOToBoard(boardDTO);
+        // No need to set spaces here if not included in the payload
         Board savedBoard = boardService.createBoard(board);
         return ResponseEntity.ok(boardMapper.boardToBoardDTO(savedBoard));
     }
@@ -43,6 +51,9 @@ public class BoardController {
     @PutMapping("/{id}")
     public ResponseEntity<BoardDTO> updateBoard(@PathVariable Long id, @RequestBody BoardDTO boardDTO) {
         Board boardDetails = boardMapper.boardDTOToBoard(boardDTO);
+        if (boardDTO.getSpaces() != null) {
+            boardDetails.setSpaces(boardMapper.mapSpaces(boardDTO.getSpaces(), boardDetails));
+        }
         Board updatedBoard = boardService.updateBoard(id, boardDetails);
         return ResponseEntity.ok(boardMapper.boardToBoardDTO(updatedBoard));
     }
